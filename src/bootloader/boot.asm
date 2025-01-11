@@ -1,87 +1,125 @@
 [org 0x7C00]
 [bits 16]
 
-CODE_OFFSET equ 0x08
-DATA_OFFSET equ 0x10
+KERNEL equ 0x7F00
 
-KERNEL_LOAD_SEG equ 0x1000
-KERNEL_START_ADDR equ 0x100000
+jmp 0x0000:_start
 
-jmp 0x0000:start
-
-start:
+_start:
     ; disable interrupts
     cli
 
     ; setup segments
-    mov ax, 0
+    xor ax, ax
     mov ds, ax
     mov es, ax
+    mov ss, ax
+    mov sp, 0x8000
+    mov [BOOT_DRIVE], dl; 17*512 allows for a kernel.bin up to 8704 bytes
+    mov dh, 17
+    mov bx, KERNEL
 
     ; setup stack
     mov ss, ax
-    mov sp, 0x7C00
-
-    ; load gdt
-    lgdt [gdt_descriptor]
+    mov sp, 0x7E00
 
     ; load kernel
-    mov bx, KERNEL_LOAD_SEG
-    mov ah, 0x02
-    mov al, 0x20
-    mov ch, 0x00
-    mov cl, 0x02
-    mov dh, 0x0
-    mov dl, 0x80
-
-    int 0x13
-
-    jc error
+    call load_kernel
 
     mov si, kernel_msg
     call print
+
+    ; enable A20 line
+    call enable_a20
+
+    ; load gdt
+    mov ax, 0
+    mov ds, ax
+    lgdt [gdtr]
 
     ; switch to protected mode
     mov eax, cr0
     or al, 1
     mov cr0, eax
 
+    nop
+    nop
+    nop
+    nop
+
     jmp CODE_OFFSET:protected_mode
 
+enable_a20:
+    in al, 0x92
+    or al, 2
+    out 0x92, al
+    ret
+
+load_kernel:
+    push dx
+
+    mov ah, 0x02       ; BIOS read sectors function
+    mov al, dh          ; Number of sectors to read
+    mov ch, 0x0          ; Cylinder number (0)
+    mov cl, 0x02       ; Starting sector (sector 1)
+    mov dh, 0x0          ; Head number (0)
+    mov bx, KERNEL     ; Address where the kernel will be loaded
+
+    int 0x13
+    jc disk_error
+
+    pop dx
+    ret
+
+disk_error:
+    mov ah, 0x01 ; Get status
+    int 0x13
+    push ax
+
+    mov si, disk_error_msg
+    call print
+
+    pop ax
+    mov ah, 0x0E
+    add al, '0'              ; Convert to ASCII
+    int 0x10
+
+    jmp $
+
+disk_error_msg: db 'Disk error: ', 0
 
 error:
     mov si, error_msg
     call print
-    hlt
+    jmp $
 
 gdt_start:
-    ; Null descriptor
-    dq 0x0
+    dq 0
 
-    ; Code segment
-    dw 0xFFFF ; Limit
-    dw 0x0000 ; Base
-    db 0x00 ; Base
-    db 0x9A ; Access byte
-    db 0xCF ; Flags and Limit
-    db 0x00 ; Base
+gdt_code:
+    dw 0FFFFh           ; limit low
+    dw 0                ; base low
+    db 0                ; base middle
+    db 10011010b        ; access
+    db 11001111b        ; granularity
+    db 0                ; base high
 
-    ; Data segment
-    dw 0xFFFF ; Limit
-    dw 0x0000 ; Base
-    db 0x00 ; Base
-    db 0x92 ; Access byte
-    db 0xCF ; Flags and Limit
-    db 0x00 ; Base
+gdt_data:
+    dw 0FFFFh           ; limit low (Same as code)
+    dw 0                ; base low
+    db 0                ; base middle
+    db 10010010b        ; access
+    db 11001111b        ; granularity
+    db 0                ; base high
+end_of_gdt:
 
-gdt_end:
+gdtr:
+    dw end_of_gdt - gdt_start - 1   ; limit (Size of GDT)
+    dd gdt_start        ; base of GDT
 
-gdt_descriptor:
-    dw gdt_end - gdt_start - 1
-    dd gdt_start
+CODE_OFFSET equ gdt_code - gdt_start
+DATA_OFFSET equ gdt_data - gdt_start
 
-; Params:
-;    - ds:si points to string
 print:
     push si
     push ax
@@ -104,23 +142,26 @@ print:
 
 [bits 32]
 protected_mode:
-    ; A20 line
-    mov eax, cr0
-    or al, 1
-    mov cr0, eax
-
-    ;execute kernel
-    mov ax,10h
+    ; Set up segments
+    mov ax, DATA_OFFSET
     mov ds, ax
     mov es, ax
     mov fs, ax
     mov gs, ax
     mov ss, ax
 
-    jmp CODE_OFFSET:KERNEL_START_ADDR
+    mov ebp, 0x90000
+    mov esp, ebp
 
+    call KERNEL
+    cli
 
+loopend:
+    hlt
+    jmp loopend
 
+[bits 16]
+BOOT_DRIVE: db 0
 error_msg: db 'Error :(', 0
 kernel_msg: db 'Kernel loaded ', 0
 times 510 - ($ - $$) db 0 ; Padding
