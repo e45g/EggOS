@@ -134,10 +134,10 @@ protected_mode:
     mov gs, ax
     mov ss, ax
 
-    mov ebp, 0x9000
-    mov esp, ebp
+    mov esp, 0xA000
 
     call KERNEL_ADDRESS
+    mov dword [0xB8000], 0x0A41
     cli
 
 loopend:
