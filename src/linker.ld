@@ -1,6 +1,5 @@
-OUTPUT_FORMAT(elf32-i386)
 ENTRY(kernel_main)
-
+OUTPUT_FORMAT(elf32-i386)
 SECTIONS
 {
     . = 0x7F00;

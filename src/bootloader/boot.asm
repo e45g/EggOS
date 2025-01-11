@@ -1,148 +1,132 @@
 [org 0x7C00]
 [bits 16]
 
-KERNEL equ 0x7F00
+KERNEL_ADDRESS equ 0x7F00
+
+%define ENDL 0x0aD, 0x0A
 
 jmp 0x0000:_start
 
 _start:
-    ; disable interrupts
     cli
 
-    ; setup segments
     xor ax, ax
     mov ds, ax
     mov es, ax
     mov ss, ax
-    mov sp, 0x8000
-    mov [BOOT_DRIVE], dl; 17*512 allows for a kernel.bin up to 8704 bytes
-    mov dh, 17
-    mov bx, KERNEL
-
-    ; setup stack
-    mov ss, ax
     mov sp, 0x7E00
 
-    ; load kernel
-    call load_kernel
+    mov [boot_drive], dl;
+    mov dh, 0x20
+    mov bx, KERNEL_ADDRESS
 
-    mov si, kernel_msg
+    ; welcome message
+    mov si, welcome_msg
     call print
 
-    ; enable A20 line
-    call enable_a20
+    ; load the kernel
+    call load_kernel
 
-    ; load gdt
-    mov ax, 0
-    mov ds, ax
+    ; activate a20
+    call activate_a20
+
+    ; gdt
     lgdt [gdtr]
 
-    ; switch to protected mode
+    ; enter protected mode
     mov eax, cr0
     or al, 1
     mov cr0, eax
 
-    nop
-    nop
-    nop
-    nop
-
     jmp CODE_OFFSET:protected_mode
 
-enable_a20:
-    in al, 0x92
-    or al, 2
-    out 0x92, al
-    ret
+    hlt
+
+%include "src/bootloader/a20.asm"
 
 load_kernel:
     push dx
 
-    mov ah, 0x02       ; BIOS read sectors function
-    mov al, dh          ; Number of sectors to read
-    mov ch, 0x0          ; Cylinder number (0)
-    mov cl, 0x02       ; Starting sector (sector 1)
-    mov dh, 0x0          ; Head number (0)
-    mov bx, KERNEL     ; Address where the kernel will be loaded
+    mov ah, 0x02 ; BIOS mode
+    mov al, dh ; Sector count
+    mov ch, 0x00 ; Cylinder
+    mov cl, 0x02 ; Starting sector
+    mov dh, 0x00 ; Head number
+    mov bx, KERNEL_ADDRESS
 
     int 0x13
+
     jc disk_error
+
+    mov si, disk_success_msg
+    call print
 
     pop dx
     ret
 
 disk_error:
-    mov ah, 0x01 ; Get status
-    int 0x13
-    push ax
-
     mov si, disk_error_msg
     call print
 
-    pop ax
-    mov ah, 0x0E
-    add al, '0'              ; Convert to ASCII
-    int 0x10
-
-    jmp $
-
-disk_error_msg: db 'Disk error: ', 0
-
-error:
-    mov si, error_msg
-    call print
-    jmp $
+    jmp halt
 
 gdt_start:
-    dq 0
+    dq 0x0 ; Null
 
 gdt_code:
-    dw 0FFFFh           ; limit low
-    dw 0                ; base low
-    db 0                ; base middle
-    db 10011010b        ; access
-    db 11001111b        ; granularity
-    db 0                ; base high
+    dw 0xFFFF    ; Limit
+    dw 0x0000    ; Base
+    db 0x00      ; Base
+    db 10011010b ; Access byte
+    db 11001111b ; Flags + Limit
+    db 0x0       ; Base
 
 gdt_data:
-    dw 0FFFFh           ; limit low (Same as code)
-    dw 0                ; base low
-    db 0                ; base middle
-    db 10010010b        ; access
-    db 11001111b        ; granularity
-    db 0                ; base high
-end_of_gdt:
+    dw 0xFFFF    ; Limit
+    dw 0x0000    ; Base
+    db 0x00      ; Base
+    db 10010010b ; Access byte
+    db 11001111b ; Flags + Limit
+    db 0x0       ; Base
+
+gdt_end:
 
 gdtr:
-    dw end_of_gdt - gdt_start - 1   ; limit (Size of GDT)
-    dd gdt_start        ; base of GDT
+    dw gdt_end - gdt_start - 1
+    dd gdt_start
 
 CODE_OFFSET equ gdt_code - gdt_start
 DATA_OFFSET equ gdt_data - gdt_start
 
+
 print:
-    push si
     push ax
+    push si
+
+    mov ah, 0x0E
+    mov bh, 0x0
+    jmp .loop
 
 .loop:
-    lodsb               ; load next character into al
-    cmp al, 0
+    lodsb
+    or al, al
     je .done
-
-    mov ah, 0x0e
-    mov bh, 0
     int 0x10
-
     jmp .loop
 
 .done:
-    pop ax
     pop si
+    pop ax
     ret
+
+halt:
+    hlt
+    jmp halt
+
 
 [bits 32]
 protected_mode:
-    ; Set up segments
+    ; setup segments and stack
     mov ax, DATA_OFFSET
     mov ds, ax
     mov es, ax
@@ -150,19 +134,22 @@ protected_mode:
     mov gs, ax
     mov ss, ax
 
-    mov ebp, 0x90000
+    mov ebp, 0x9000
     mov esp, ebp
 
-    call KERNEL
+    call KERNEL_ADDRESS
     cli
 
 loopend:
     hlt
     jmp loopend
 
+
 [bits 16]
-BOOT_DRIVE: db 0
-error_msg: db 'Error :(', 0
-kernel_msg: db 'Kernel loaded ', 0
-times 510 - ($ - $$) db 0 ; Padding
-dw 0xaa55 ; Bootable file
+boot_drive: db 0
+welcome_msg: db 'Welcome :)', ENDL, 0
+disk_error_msg: db 'Drive Error :(', ENDL, 0
+disk_success_msg: db 'Kernel loaded :)', ENDL, 0
+
+times 510 - ($ - $$) db 0
+dw 0xAA55

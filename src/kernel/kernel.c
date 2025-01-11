@@ -1,8 +1,3 @@
-__asm__ (".pushsection .text.start\r\n" \
-         "jmp kernel_main\r\n" \
-         ".popsection\r\n"
-         );
-
 #include <stdint.h>
 
 int kernel_main() {
