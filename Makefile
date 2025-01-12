@@ -33,7 +33,7 @@ $(info ASM Objects: $(KERNEL_ASM_OBJS))
 .PHONY: all clean run boot kernel
 
 all: directories boot kernel
-	dd if=/dev/zero of=$(OS_IMAGE) bs=512 count=40
+	dd if=/dev/zero of=$(OS_IMAGE) bs=512 count=64
 	dd if=$(BOOT_BIN) of=$(OS_IMAGE) bs=512 conv=notrunc
 	dd if=$(KERNEL_BIN) of=$(OS_IMAGE) bs=512 seek=1 conv=notrunc
 

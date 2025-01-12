@@ -1,8 +1,6 @@
-#ifndef _KERNEL_TTY_H
-#define _KERNEL_TTY_H
+#pragma once
 
-#include <stddef.h>
-#include <stdint.h>
+#include "common.h"
 
 /*
 * Initializes the terminal:
@@ -41,4 +39,8 @@ void terminal_writestring(const char *str);
 * Sets terminal color.
 */
 void terminal_set_color(uint8_t fg, uint8_t bg);
-#endif
+
+/*
+* :) Kernel OK
+*/
+void welcome_msg();

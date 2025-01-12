@@ -1,7 +1,6 @@
-#ifndef VGA_H
-#define VGA_H
+#pragma once
 
-#include <stdint.h>
+#include "common.h"
 
 enum vga_color {
 	VGA_COLOR_BLACK = 0,
@@ -29,5 +28,3 @@ static inline uint8_t vga_entry_color(enum vga_color fg, enum vga_color bg) {
 static inline uint16_t vga_entry(unsigned char uc, uint8_t color) {
 	return (uint16_t) uc | (uint16_t) color << 8;
 }
-
-#endif
