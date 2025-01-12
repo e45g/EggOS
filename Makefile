@@ -1,36 +1,64 @@
 LD = $(HOME)/opt/cross/bin/i686-elf-ld
 GCC = $(HOME)/opt/cross/bin/i686-elf-gcc
+ASM = nasm
 
-LINKER_SRC = src/linker.ld
-KERNEL_SRC = src/kernel
-BOOT_SRC = src/bootloader
+SRC_DIR = src
+KERNEL_DIR = $(SRC_DIR)/kernel
+BOOT_DIR = $(SRC_DIR)/bootloader
+BUILD_DIR = build
+BIN_DIR = bin
 
-BOOT_BIN = bin/boot.bin
-KERNEL_BIN = bin/kernel.bin
+KERNEL_C_SRCS := $(shell find $(KERNEL_DIR) -name '*.c')
+KERNEL_ASM_SRCS := $(shell find $(KERNEL_DIR) -name '*.asm')
 
-KERNEL_OBJ = build/kernel.o
-KERNEL_ASM_OBJ = build/kernel_asm.o
-KERNEL_ELF = build/kernel.elf
+KERNEL_C_OBJS := $(addprefix $(BUILD_DIR)/,$(notdir $(KERNEL_C_SRCS:.c=_c.o)))
+KERNEL_ASM_OBJS := $(addprefix $(BUILD_DIR)/,$(notdir $(KERNEL_ASM_SRCS:.asm=_asm.o)))
 
-OS = bin/os.img
+BOOT_BIN = $(BIN_DIR)/boot.bin
+KERNEL_BIN = $(BIN_DIR)/kernel.bin
+KERNEL_ELF = $(BUILD_DIR)/kernel.elf
+OS_IMAGE = $(BIN_DIR)/os.img
 
-all: clean boot kernel
-	dd if=/dev/zero of=$(OS) bs=512 count=32768
-	dd if=$(BOOT_BIN) of=$(OS) bs=512 conv=notrunc
-	dd if=$(KERNEL_BIN) of=$(OS) bs=512 seek=1 conv=notrunc
+CFLAGS = -ffreestanding -O2 -Wall -Wextra -I$(KERNEL_DIR)
+LDFLAGS = -T$(SRC_DIR)/linker.ld -static -nostdlib --nmagic
+
+VPATH = $(sort $(dir $(KERNEL_C_SRCS)) $(dir $(KERNEL_ASM_SRCS)))
+
+# Debug information
+$(info C Sources: $(KERNEL_C_SRCS))
+$(info C Objects: $(KERNEL_C_OBJS))
+$(info ASM Sources: $(KERNEL_ASM_SRCS))
+$(info ASM Objects: $(KERNEL_ASM_OBJS))
+
+.PHONY: all clean run boot kernel
+
+all: directories boot kernel
+	dd if=/dev/zero of=$(OS_IMAGE) bs=512 count=40
+	dd if=$(BOOT_BIN) of=$(OS_IMAGE) bs=512 conv=notrunc
+	dd if=$(KERNEL_BIN) of=$(OS_IMAGE) bs=512 seek=1 conv=notrunc
+
+directories:
+	mkdir -p $(BUILD_DIR)
+	mkdir -p $(BIN_DIR)
 
 run: all
-	qemu-system-i386 -drive format=raw,file=$(OS)
+	qemu-system-i386 -drive format=raw,file=$(OS_IMAGE)
 
 boot:
-	nasm -f bin -o $(BOOT_BIN) $(BOOT_SRC)/boot.asm
+	$(ASM) -f bin -o $(BOOT_BIN) $(BOOT_DIR)/boot.asm
 
-kernel:
-	nasm -f elf32 -o $(KERNEL_ASM_OBJ) $(KERNEL_SRC)/kernel.asm
-	$(GCC) -Isrc/kernel -c -ffreestanding -o $(KERNEL_OBJ) $(KERNEL_SRC)/kernel.c -lgcc
-	$(LD) -T$(LINKER_SRC) -static -nostdlib --nmagic -o $(KERNEL_ELF) $(KERNEL_ASM_OBJ) $(KERNEL_OBJ)
+# Pattern rule for C files
+$(BUILD_DIR)/%_c.o: %.c
+	$(GCC) $(CFLAGS) -c $< -o $@
+
+# Pattern rule for assembly files
+$(BUILD_DIR)/%_asm.o: %.asm
+	$(ASM) -f elf32 -o $@ $<
+
+kernel: $(KERNEL_C_OBJS) $(KERNEL_ASM_OBJS)
+	$(LD) $(LDFLAGS) -o $(KERNEL_ELF) $^
 	objcopy -O binary $(KERNEL_ELF) $(KERNEL_BIN)
 
 clean:
-	rm -f build/*
-	rm -f bin/*
+	rm -rf $(BUILD_DIR)
+	rm -rf $(BIN_DIR)

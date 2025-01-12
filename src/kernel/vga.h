@@ -1,16 +1,7 @@
+#ifndef VGA_H
+#define VGA_H
+
 #include <stdint.h>
-#include <stddef.h>
-
-#include "kernel.h"
-
-#if defined(__linux__)
-#error "You are not using a cross-compiler, you dummy."
-#endif
-
-#if !defined(__i386__)
-#error "You are not using ix86-elf compiler, you dummy."
-#endif
-
 
 enum vga_color {
 	VGA_COLOR_BLACK = 0,
@@ -30,11 +21,13 @@ enum vga_color {
 	VGA_COLOR_LIGHT_BROWN = 14,
 	VGA_COLOR_WHITE = 15,
 };
-void kernel_main(void)
-{
 
-    while(1) {
-        __asm__("hlt");
-    }
+static inline uint8_t vga_entry_color(enum vga_color fg, enum vga_color bg) {
+	return fg | bg << 4;
 }
 
+static inline uint16_t vga_entry(unsigned char uc, uint8_t color) {
+	return (uint16_t) uc | (uint16_t) color << 8;
+}
+
+#endif
