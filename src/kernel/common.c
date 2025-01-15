@@ -30,6 +30,12 @@ void printf(const char *fmt, ...) {
                     }
                     break;
 
+                case 'c': {
+                        int c = va_arg(vargs, int);
+                        putchar(c);
+                    }
+                    break;
+
                 case 'd': {
                         int value = va_arg(vargs, int);
                         if(value < 0) {
@@ -54,6 +60,18 @@ void printf(const char *fmt, ...) {
                         putchar('0');
                         putchar('x');
                         for(int i = 7; i >= 0; i--) {
+                            int nibble = (value >> (i * 4)) & 0xF;
+                            putchar("0123456789abcdef"[nibble]);
+                        }
+                    }
+                    break;
+                case 'p': {
+                        void *ptr = va_arg(vargs, void *);
+                        unsigned long value = (unsigned long)ptr;
+
+                        putchar('0');
+                        putchar('x');
+                        for (int i = 7; i >= 0; i--) {
                             int nibble = (value >> (i * 4)) & 0xF;
                             putchar("0123456789abcdef"[nibble]);
                         }

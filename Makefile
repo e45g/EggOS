@@ -19,7 +19,7 @@ KERNEL_BIN = $(BIN_DIR)/kernel.bin
 KERNEL_ELF = $(BUILD_DIR)/kernel.elf
 OS_IMAGE = $(BIN_DIR)/os.img
 
-CFLAGS = -ffreestanding -O2 -Wall -Wextra -I$(KERNEL_DIR)
+CFLAGS = -g3 -ffreestanding -O2 -Wall -Wextra -I$(KERNEL_DIR)
 LDFLAGS = -T$(SRC_DIR)/linker.ld -static -nostdlib --nmagic
 
 VPATH = $(sort $(dir $(KERNEL_C_SRCS)) $(dir $(KERNEL_ASM_SRCS)))
@@ -33,7 +33,7 @@ $(info ASM Objects: $(KERNEL_ASM_OBJS))
 .PHONY: all clean run boot kernel
 
 all: directories boot kernel
-	dd if=/dev/zero of=$(OS_IMAGE) bs=512 count=64
+	dd if=/dev/zero of=$(OS_IMAGE) bs=512 count=40
 	dd if=$(BOOT_BIN) of=$(OS_IMAGE) bs=512 conv=notrunc
 	dd if=$(KERNEL_BIN) of=$(OS_IMAGE) bs=512 seek=1 conv=notrunc
 
@@ -42,7 +42,7 @@ directories:
 	mkdir -p $(BIN_DIR)
 
 run: all
-	qemu-system-i386 -drive format=raw,file=$(OS_IMAGE)
+	qemu-system-i386 -drive format=raw,file=$(OS_IMAGE) -s
 
 boot:
 	$(ASM) -f bin -o $(BOOT_BIN) $(BOOT_DIR)/boot.asm

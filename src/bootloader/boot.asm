@@ -1,7 +1,7 @@
 [org 0x7C00]
 [bits 16]
 
-KERNEL_ADDRESS equ 0x7F00
+KERNEL_ADDRESS equ 0x10000
 
 %define ENDL 0x0aD, 0x0A
 
@@ -18,7 +18,7 @@ _start:
 
     mov [boot_drive], dl;
     mov dh, 0x20
-    mov bx, KERNEL_ADDRESS
+    mov bx, 0x1000
 
     ; welcome message
     mov si, welcome_msg
@@ -52,7 +52,9 @@ load_kernel:
     mov ch, 0x00 ; Cylinder
     mov cl, 0x02 ; Starting sector
     mov dh, 0x00 ; Head number
-    mov bx, KERNEL_ADDRESS
+    mov bx, 0x1000
+    mov es, bx
+    mov bx, 0x0
 
     int 0x13
 
@@ -126,7 +128,11 @@ halt:
 
 [bits 32]
 protected_mode:
+
     ; setup segments and stack
+    mov ax, CODE_OFFSET
+    mov cs, ax
+
     mov ax, DATA_OFFSET
     mov ds, ax
     mov es, ax
@@ -134,7 +140,6 @@ protected_mode:
     mov gs, ax
     mov ss, ax
 
-    mov esp, 0xA000
 
     call KERNEL_ADDRESS
     mov dword [0xB8000], 0x0A41

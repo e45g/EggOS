@@ -3,6 +3,7 @@ global _start
 extern kernel_main
 
 section .bss
+align 16
 stack_start:
     resb 16384      ; Reserve 16KB for the stack
 stack_end:
