@@ -10,6 +10,9 @@ stack_end:
 
 section .text.start
 _start:
+    mov al, 0x08
+    mov dl, al
+
     mov esp, stack_end
     call kernel_main
     mov dword [0xB8000], 0x0A42

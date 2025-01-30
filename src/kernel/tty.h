@@ -12,8 +12,9 @@ void terminal_initialization();
 
 /*
 * Scrolls up(0) or down(1)
+* no direction for now
 */
-void terminal_scroll(int direction);
+void terminal_scroll();
 
 /*
 * Puts a character `c` to a position `x, y` with color `color`.
@@ -44,3 +45,8 @@ void terminal_set_color(uint8_t fg, uint8_t bg);
 * :) Kernel OK
 */
 void welcome_msg();
+
+/*
+* Update the cursor location
+*/
+void terminal_update_cursor();

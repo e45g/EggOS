@@ -84,4 +84,5 @@ void printf(const char *fmt, ...) {
         fmt++;
     }
     va_end(vargs);
+    terminal_update_cursor();
 }
