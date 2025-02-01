@@ -2,8 +2,8 @@
 #include <pic.h>
 #include <vga.h>
 
-static size_t VGA_WIDTH = 80;
-static size_t VGA_HEIGHT= 25;
+static uint16_t VGA_WIDTH = 80;
+static uint16_t VGA_HEIGHT= 25;
 
 static uint16_t *terminal_buffer;
 static uint8_t terminal_color;
@@ -15,8 +15,8 @@ void terminal_initialization() {
     terminal_color = vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
     terminal_y = 0;
     terminal_x = 0;
-    for(size_t y = 0; y < VGA_HEIGHT; y++) {
-        for(size_t x = 0; x < VGA_WIDTH; x++) {
+    for(uint16_t y = 0; y < VGA_HEIGHT; y++) {
+        for(uint16_t x = 0; x < VGA_WIDTH; x++) {
             terminal_buffer[y * VGA_WIDTH + x] = vga_entry(' ', terminal_color);
         }
     }
@@ -29,13 +29,13 @@ void terminal_set_color(uint8_t fg, uint8_t bg) {
 
 void terminal_scroll() {
     // Shift rows up
-    for (size_t y = 0; y < VGA_HEIGHT - 1; y++) {
-        for (size_t x = 0; x < VGA_WIDTH; x++) {
+    for (uint16_t y = 0; y < VGA_HEIGHT - 1; y++) {
+        for (uint16_t x = 0; x < VGA_WIDTH; x++) {
             terminal_buffer[y * VGA_WIDTH + x] = terminal_buffer[(y + 1) * VGA_WIDTH + x];
         }
     }
     // Clear the bottom row
-    for (size_t x = 0; x < VGA_WIDTH; x++) {
+    for (uint16_t x = 0; x < VGA_WIDTH; x++) {
         terminal_buffer[(VGA_HEIGHT - 1) * VGA_WIDTH + x] = vga_entry(' ', terminal_color);
     }
     // Adjust cursor position
@@ -45,11 +45,11 @@ void terminal_scroll() {
 }
 
 
-void terminal_putcharat(char c, uint8_t color, size_t x, size_t y) {
+void terminal_putcharat(char c, uint8_t color, uint16_t x, uint16_t y) {
     terminal_buffer[y * VGA_WIDTH + x] = vga_entry(c, color);
 }
 
-void terminal_move(int x, int y) {
+void terminal_rmove(int x, int y) {
     if(terminal_x + x < 0) {
         terminal_y -= 1 - ((x<0) ? x*-1 : x)/VGA_WIDTH;
         terminal_x = VGA_WIDTH + 1 - ((x<0) ? (x*-1) % VGA_WIDTH : x % VGA_WIDTH);
@@ -73,6 +73,11 @@ void terminal_move(int x, int y) {
     terminal_y += y;
 }
 
+void terminal_set_cursor(uint16_t x, uint16_t y) {
+    terminal_x = x;
+    terminal_y = y;
+}
+
 void terminal_putchar(char c) {
     if (c == '\n') {
         terminal_x = 0;
@@ -83,9 +88,9 @@ void terminal_putchar(char c) {
         return;
     }
     else if(c == '\b') {
-        terminal_move(-1, 0);
+        terminal_rmove(-1, 0);
         terminal_putchar(' ');
-        terminal_move(-1, 0);
+        terminal_rmove(-1, 0);
         return;
     }
     terminal_putcharat(c, terminal_color, terminal_x, terminal_y);
@@ -99,14 +104,14 @@ void terminal_putchar(char c) {
     }
 }
 
-void terminal_write(const char *data, size_t size) {
-    for(size_t i = 0; i < size; i++) {
+void terminal_write(const char *data, uint16_t size) {
+    for(uint16_t i = 0; i < size; i++) {
         terminal_putchar(*(data+i));
     }
 }
 
 void terminal_writestring(const char *str) {
-    size_t len = strlen(str);
+    uint16_t len = strlen(str);
     terminal_write(str, len);
 
     terminal_update_cursor();
@@ -156,4 +161,14 @@ void welcome_msg() {
     terminal_writestring("Kernel is chillin'\n");
 
     terminal_set_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
+}
+
+void terminal_clear(void) {
+    for(uint16_t y = 0; y < VGA_HEIGHT; y++) {
+        for(uint16_t x = 0; x < VGA_WIDTH; x++) {
+            terminal_buffer[y * VGA_WIDTH + x] = vga_entry(' ', terminal_color);
+        }
+    }
+    terminal_set_cursor(0, 0);
+    terminal_update_cursor();
 }

@@ -11,7 +11,7 @@ inline uint8_t inb(uint16_t port) {
     return ret;
 }
 
-static inline void io_wait(void) {
+inline void io_wait(void) {
     outb(0x80, 0);
 }
 
@@ -53,6 +53,9 @@ void pic_setup() {
     // restore data
     outb(PIC1_DATA, a1);
     outb(PIC2_DATA, a2);
+
+    pic_disable();
+    pic_clear_mask(1);
 }
 
 void pic_set_mask(uint8_t irq_line) {

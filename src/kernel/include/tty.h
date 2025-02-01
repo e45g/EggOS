@@ -19,7 +19,7 @@ void terminal_scroll();
 /*
 * Puts a character `c` to a position `x, y` with color `color`.
 */
-void terminal_putcharat(char c, uint8_t color, size_t x, size_t y);
+void terminal_putcharat(char c, uint8_t color, uint16_t x, uint16_t y);
 
 /*
 * Puts a character `c` at the current position.
@@ -29,7 +29,7 @@ void terminal_putchar(char c);
 /*
 * Writes string `str` with size of `size` at the current position.
 */
-void terminal_write(const char *str, size_t size);
+void terminal_write(const char *str, uint16_t size);
 
 /*
 * Writes a string `str` at the current position.
@@ -47,6 +47,23 @@ void terminal_set_color(uint8_t fg, uint8_t bg);
 void welcome_msg();
 
 /*
-* Update the cursor location
+* Update the cursor position.
 */
 void terminal_update_cursor();
+
+
+/*
+* Move cursor relatively to the current position.
+*/
+void terminal_rmove(int x, int y);
+
+/*
+* Clear the screen.
+*/
+void terminal_clear();
+
+
+/*
+* Sets the cursor position.
+*/
+void terminal_set_cursor(uint16_t x, uint16_t y);

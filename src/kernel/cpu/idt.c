@@ -1,6 +1,6 @@
 #include <idt.h>
 #include <common.h>
-#include <kernel.h>
+#include <utils.h>
 #include <vga.h>
 #include <tty.h>
 #include <keyboard.h>
@@ -17,7 +17,9 @@ void exception_handler(uint32_t vector, uint32_t error_code) {
 
     printf("Exception: %d\nError Code: %d\nESP: %p\n", vector, error_code, esp);
 
-    __asm__ volatile("cli; hlt");
+    while(1) {
+        __asm__ volatile("cli; hlt");
+    }
 }
 
 
