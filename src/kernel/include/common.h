@@ -1,4 +1,5 @@
-#pragma once
+#ifndef COMMON_H
+#define COMMON_H
 
 #define va_list  __builtin_va_list
 #define va_start __builtin_va_start
@@ -45,3 +46,5 @@ size_t strlen(const char *str);
 
 void memset(void *buf, char c, size_t n);
 void memcpy(void *dst, const void *src, unsigned long n);
+
+#endif

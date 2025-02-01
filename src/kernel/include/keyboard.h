@@ -1,4 +1,7 @@
-#pragma once
+#include "common.h"
+
+#ifndef KEYBOARD_H
+#define KEYBOARD_H
 
 #define MOD_NONE 0
 #define MOD_CTRL 1 << 0
@@ -11,7 +14,7 @@
 #define RSHIFT_PRESSED 0x36
 #define LALT_PRESSED 0x38
 
-static unsigned char mod_keys = 0;
+#define KEYBOARD_BUFFER_MAX 128
 
 static char keyboard[] = {
     0, // nothing
@@ -57,3 +60,7 @@ static char keyboard_alt[] = {
     0, // numlock
     0 // scrolllock
 };
+
+char getchar(void);
+
+#endif

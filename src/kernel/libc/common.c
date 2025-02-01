@@ -1,5 +1,5 @@
-#include "common.h"
-#include "tty.h"
+#include <common.h>
+#include <tty.h>
 
 size_t strlen(const char* str) {
 	size_t len = 0;

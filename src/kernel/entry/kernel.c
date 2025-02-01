@@ -1,7 +1,8 @@
-#include "kernel.h"
-#include "../tty.h"
-#include "idt.h"
-#include "pic.h"
+#include <kernel.h>
+#include <tty.h>
+#include <idt.h>
+#include <pic.h>
+#include <keyboard.h>
 
 #if defined(__linux__)
 #error "You are not using a cross-compiler, you dummy."
@@ -69,10 +70,12 @@ void kernel_main(void)
     pic_disable();
     pic_clear_mask(1);
 
-    // pic_clear_mask(0);
-
     idt_init();
     printf("I guess idt init went well?\n");
+
+    // char c = getchar();
+    // printf("You typed: %c\n", c);
+
 
     while(1) {
         __asm__("hlt");

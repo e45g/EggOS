@@ -1,4 +1,4 @@
-#include "../common.h"
+#include "common.h"
 
 #define IDT_MAX_DESCRIPTORS 256
 

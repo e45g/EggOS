@@ -19,7 +19,7 @@ KERNEL_BIN = $(BIN_DIR)/kernel.bin
 KERNEL_ELF = $(BUILD_DIR)/kernel.elf
 OS_IMAGE = $(BIN_DIR)/os.img
 
-CFLAGS = -g3 -ffreestanding -O2 -Wall -Wextra -I$(KERNEL_DIR)
+CFLAGS = -g3 -ffreestanding -O2 -Wall -Wextra -I$(KERNEL_DIR)/include/
 LDFLAGS = -T$(SRC_DIR)/linker.ld -static -nostdlib --nmagic
 
 VPATH = $(sort $(dir $(KERNEL_C_SRCS)) $(dir $(KERNEL_ASM_SRCS)))

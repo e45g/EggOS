@@ -1,5 +1,5 @@
-#include "pic.h"
-#include "../common.h"
+#include <pic.h>
+#include <common.h>
 
 inline void outb(uint16_t port, uint8_t value) {
     __asm__ volatile("outb %0, %w1" : : "a"(value), "Nd"(port) : "memory");

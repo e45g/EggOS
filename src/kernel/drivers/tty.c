@@ -1,6 +1,6 @@
-#include "tty.h"
-#include "kernel/pic.h"
-#include "vga.h"
+#include <tty.h>
+#include <pic.h>
+#include <vga.h>
 
 static size_t VGA_WIDTH = 80;
 static size_t VGA_HEIGHT= 25;
@@ -121,19 +121,39 @@ void terminal_update_cursor() {
 	outb(0x3D5, (uint8_t) ((pos >> 8) & 0xFF));
 }
 
+// void welcome_msg() {
+//     terminal_set_color(VGA_COLOR_LIGHT_BROWN, VGA_COLOR_BLACK);
+//     terminal_writestring("     _____       \n");
+//     terminal_writestring("    /     \\      \n");
+//     terminal_writestring("   |  O O  |     \n");
+//     terminal_writestring("   |   ^   |     ");
+//
+//     terminal_set_color(VGA_COLOR_GREEN, VGA_COLOR_BLACK);
+//     terminal_writestring("Kernel is chillin'\n");
+//
+//     terminal_set_color(VGA_COLOR_LIGHT_BROWN, VGA_COLOR_BLACK);
+//     terminal_writestring("   |  \\_/  |     \n");
+//     terminal_writestring("    \\_____/      \n");
+//
+//     terminal_set_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
+// }
+
 void welcome_msg() {
     terminal_set_color(VGA_COLOR_LIGHT_BROWN, VGA_COLOR_BLACK);
-    terminal_writestring("     _____       \n");
-    terminal_writestring("    /     \\      \n");
-    terminal_writestring("   |  O O  |     \n");
-    terminal_writestring("   |   ^   |     ");
+    terminal_writestring("               __\n");
+    terminal_writestring("              / _) ");
+
+    terminal_set_color(VGA_COLOR_RED, VGA_COLOR_BLACK);
+    terminal_writestring("WGRRR!\n");
+    terminal_set_color(VGA_COLOR_LIGHT_BROWN, VGA_COLOR_BLACK);
+
+    terminal_writestring("     _.----._/ /\n");
+    terminal_writestring("    /         /\n");
+    terminal_writestring(" __/ (  | (  |\n");
+    terminal_writestring("/__.-'|_|--|_|\n");
 
     terminal_set_color(VGA_COLOR_GREEN, VGA_COLOR_BLACK);
-    terminal_writestring("Kernel OK\n");
-
-    terminal_set_color(VGA_COLOR_LIGHT_BROWN, VGA_COLOR_BLACK);
-    terminal_writestring("   |  \\_/  |     \n");
-    terminal_writestring("    \\_____/      \n");
+    terminal_writestring("Kernel is chillin'\n");
 
     terminal_set_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
 }
