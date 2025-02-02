@@ -1,1 +1,1 @@
-# SimpleOS
+# EggOS
