@@ -3,35 +3,9 @@
 #include <utils.h>
 #include <keyboard.h>
 #include <common.h>
+#include <shell.h>
 
-void print_help(void) {
-    printf("\n========================== GENERIC ==========================");
-    printf("\n= help           : Displays this help message                =");
-    printf("\n= fetch          : Displays the logo                        =");
-    printf("\n= exit           : Exits the shell                          =");
-    printf("\n= get_esp        : Displays the current ESP                  =");
-    printf("\n= get_stack      : Displays the current stack               =");
-    printf("\n= clear          : Clears the screen                        =");
-    printf("\n=============================================================\n");
-}
-
-
-void fetch() {
-    terminal_set_color(VGA_COLOR_RED, VGA_COLOR_BLACK);
-    printf("               __\n");
-    printf("              / _)  ");
-
-    terminal_set_color(VGA_COLOR_GREEN, VGA_COLOR_BLACK);
-    printf("T-RexOS\n");
-    terminal_set_color(VGA_COLOR_RED, VGA_COLOR_BLACK);
-
-    printf("     _.----._/ /  \n");
-    printf("    /         /   \n");
-    printf(" __/ (  | (  |    \n");
-    printf("/__.-'|_|--|_|    \n");
-
-    terminal_set_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
-}
+static char history[256][256] = {0};
 
 void launch_shell(void) {
     char prefix[] = "$ ";
@@ -56,6 +30,12 @@ void launch_shell(void) {
         else if (strcmp(prompt, "help") == 0) {
             print_help();
         }
+        else if (strcmp(prompt, "exit") == 0) { }
+        else {
+            printf("Command `%s` not found.\n", prompt);
+        }
+
+        strcpy(history[0], prompt);
 
     } while(strcmp(prompt, "exit") != 0);
 

@@ -1,13 +1,6 @@
 #include <common.h>
 #include <tty.h>
 
-size_t strlen(const char* str) {
-	size_t len = 0;
-	while (str[len])
-		len++;
-	return len;
-}
-
 void putchar(char c) {
     terminal_putchar(c);
 }

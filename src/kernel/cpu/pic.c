@@ -54,6 +54,7 @@ void pic_setup() {
     outb(PIC1_DATA, a1);
     outb(PIC2_DATA, a2);
 
+    // enable keyboard and disable everything else
     pic_disable();
     pic_clear_mask(1);
 }

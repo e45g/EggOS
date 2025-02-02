@@ -89,8 +89,7 @@ void terminal_putchar(char c) {
     }
     else if(c == '\b') {
         terminal_rmove(-1, 0);
-        terminal_putchar(' ');
-        terminal_rmove(-1, 0);
+        terminal_putcharat(' ', vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_LIGHT_RED), terminal_x, terminal_y);
         return;
     }
     terminal_putcharat(c, terminal_color, terminal_x, terminal_y);
@@ -125,23 +124,6 @@ void terminal_update_cursor() {
 	outb(0x3D4, 0x0E);
 	outb(0x3D5, (uint8_t) ((pos >> 8) & 0xFF));
 }
-
-// void welcome_msg() {
-//     terminal_set_color(VGA_COLOR_LIGHT_BROWN, VGA_COLOR_BLACK);
-//     terminal_writestring("     _____       \n");
-//     terminal_writestring("    /     \\      \n");
-//     terminal_writestring("   |  O O  |     \n");
-//     terminal_writestring("   |   ^   |     ");
-//
-//     terminal_set_color(VGA_COLOR_GREEN, VGA_COLOR_BLACK);
-//     terminal_writestring("Kernel is chillin'\n");
-//
-//     terminal_set_color(VGA_COLOR_LIGHT_BROWN, VGA_COLOR_BLACK);
-//     terminal_writestring("   |  \\_/  |     \n");
-//     terminal_writestring("    \\_____/      \n");
-//
-//     terminal_set_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
-// }
 
 void welcome_msg() {
     terminal_set_color(VGA_COLOR_LIGHT_BROWN, VGA_COLOR_BLACK);

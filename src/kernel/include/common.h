@@ -39,6 +39,7 @@ void printf(const char *, ...);
 */
 size_t strlen(const char *str);
 int strcmp(const char *s1, const char *s2);
+char *strcpy(char *dst, const char *src);
 
 
 /*

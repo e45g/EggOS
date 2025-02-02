@@ -14,7 +14,20 @@ char kb[] = {
     ' ', 0, // caps lock
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // f0 - f10 keys
     0, // numlock
-    0 // scrolllock
+    0, // scrolllock
+    7, // keypad 7
+    8, // keypad 8
+    9, // keypad 9
+    '-', // keypad -
+    4, // keypad 4
+    5, // keypad 5
+    6, // keypad 6
+    '+', // keypad +
+    1, // keypad 1
+    2, // keypad 2
+    3, // keypad 3
+    0, // keypad 0
+    '.', // keypad .
 };
 
 char kb_shift[] = {
@@ -29,81 +42,135 @@ char kb_shift[] = {
     ' ', 0, // caps lock
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // f0 - f10 keys
     0, // numlock
-    0 // scrolllock
+    0, // scrolllock
+    7, // keypad 7
+    8, // keypad 8
+    9, // keypad 9
+    '-', // keypad -
+    4, // keypad 4
+    5, // keypad 5
+    6, // keypad 6
+    '+', // keypad +
+    1, // keypad 1
+    2, // keypad 2
+    3, // keypad 3
+    0, // keypad 0
+    '.', // keypad .
 };
 
-static unsigned char mod_keys = 0;
+static keyboard_t keyboard = {
+    .mod_keys = MOD_NONE,
+    .state = STATE_NORMAL,
+    .buffer = {0},
+    .head = 0,
+    .tail = 0
+};
 
-static char kb_buffer[KEYBOARD_BUFFER_MAX] = {0};
-static int kb_head = 0;
-static int kb_tail = 0;
+static void enqueue_char(char c) {
+    if (c != 0) {
+        keyboard.buffer[keyboard.head] = c;
+        keyboard.head = (keyboard.head + 1) % KB_BUFFER_MAX;
+    }
+}
+
+static bool handle_modifier(uint8_t scancode) {
+    switch (scancode) {
+        case LSHIFT_PRESSED:
+            keyboard.mod_keys |= MOD_SHIFT;
+            return true;
+        case LCTRL_PRESSED:
+            keyboard.mod_keys |= MOD_CTRL;
+            return true;
+        case LALT_PRESSED:
+            keyboard.mod_keys |= MOD_ALT;
+            return true;
+        case LSHIFT_PRESSED + 0x80:
+            keyboard.mod_keys &= ~MOD_SHIFT;
+            return true;
+        case LCTRL_PRESSED + 0x80:
+            keyboard.mod_keys &= ~MOD_CTRL;
+            return true;
+        case LALT_PRESSED + 0x80:
+            keyboard.mod_keys &= ~MOD_ALT;
+            return true;
+        default:
+            return false;
+    }
+}
+
+static bool handle_extended(uint8_t scancode) {
+    char c = 0;
+    switch (scancode) {
+        case 0x4D:  // right arrow
+            c = RIGHT_ARROW_PRESSED;
+            break;
+        case 0x4B:  // left arrow
+            c = LEFT_ARROW_PRESSED;
+            break;
+        case 0x48:  // up arrow
+            c = UP_ARROW_PRESSED;
+            break;
+        case 0x50:  // down arrow
+            c = DOWN_ARROW_PRESSED;
+            break;
+        default:
+            return false;
+    }
+    enqueue_char(c);
+    keyboard.state = STATE_NORMAL;
+    return true;
+}
 
 void handle_keyboard() {
     uint8_t scancode = inb(0x60);
-    char c;
+    char c = 0;
 
-    switch(scancode) {
-        case LSHIFT_PRESSED:
-            mod_keys |= MOD_SHIFT;
-            goto mod;
-        case LCTRL_PRESSED:
-            mod_keys |= MOD_CTRL;
-            goto mod;
-        case LALT_PRESSED:
-            mod_keys |= MOD_ALT;
-            goto mod;
-
-        case LSHIFT_PRESSED + 0x80:
-            mod_keys &= ~(MOD_SHIFT);
-            goto mod;
-        case LCTRL_PRESSED + 0x80:
-            mod_keys &= ~(MOD_CTRL);
-            goto mod;
-        case LALT_PRESSED + 0x80:
-            mod_keys &= ~(MOD_ALT);
-            goto mod;
+    if (handle_modifier(scancode)) {
+        goto finish;
     }
 
-    if(scancode > sizeof(kb)) {
-        goto mod;
+    if(scancode == 0xE0) {
+        keyboard.state = STATE_EXTENDED;
+        goto finish;
     }
 
-    if(mod_keys == MOD_NONE && !(scancode & 0x80)) {
+    if (keyboard.state == STATE_EXTENDED) {
+        if (handle_extended(scancode)) {
+            goto finish;
+        }
+        keyboard.state = STATE_NORMAL;
+    }
+
+    if (scancode >= sizeof(kb)) {
+        goto finish;
+    }
+
+    if (keyboard.mod_keys & MOD_SHIFT) {
+        c = kb_shift[scancode];
+    } else {
         c = kb[scancode];
     }
-    else if(mod_keys == MOD_SHIFT && !(scancode & 0x80)) {
-        c = kb_shift[scancode];
-    }
-    else if(mod_keys == MOD_CTRL && !(scancode & 0x80)) {
-        c = 4;
-    }
-    else if ( !(scancode & 0x80) ) {
-		// printf("Not implemented (scancode = %x)\n", scancode);
-        c = 1;
-	}
 
-    if (c != 0) {
-        kb_buffer[kb_head] = c;
-        kb_head = (kb_head + 1) % KEYBOARD_BUFFER_MAX;
-    }
+    enqueue_char(c);
 
-mod:
+
+finish:
     pic_send_eoi(1);
     return;
 }
 
 char getchar(void) {
-    while(kb_head == kb_tail) {
+    while(keyboard.head == keyboard.tail) {
         __asm__ volatile("hlt");
     }
-    char c = kb_buffer[kb_tail];
-    kb_tail = (kb_tail + 1) % KEYBOARD_BUFFER_MAX;
+    char c = keyboard.buffer[keyboard.tail];
+    keyboard.tail = (keyboard.tail + 1) % KB_BUFFER_MAX;
     return c;
 }
 
 char *getstr(char *buf, uint16_t len) {
-    int c;
     uint16_t i = 0;
+    int c;
 
     while(i < len - 1) {
         c = getchar();
@@ -117,10 +184,8 @@ char *getstr(char *buf, uint16_t len) {
 
         if(c == '\n') {
             buf[i++] = '\0';
-
             terminal_putchar(c);
             terminal_update_cursor();
-
             break;
         }
 

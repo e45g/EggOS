@@ -19,9 +19,6 @@ void kernel_main(void)
     terminal_initialization();
     welcome_msg();
 
-    // uintptr_t esp = get_esp();
-    // printf("Address of ESP: %p\n", (void *)esp);
-
     pic_setup();
     idt_init();
 

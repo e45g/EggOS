@@ -16,6 +16,10 @@ _start:
     mov ss, ax
     mov sp, 0x7E00
 
+    ; mov ax, 0x1112
+    ; mov bl, 0x00
+    ; int 0x10
+
     mov [boot_drive], dl;
     mov dh, 0x20
     mov bx, 0x1000
