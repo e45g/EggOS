@@ -31,6 +31,6 @@ typedef struct {
     int tail;
 } keyboard_t;
 
-char getchar(void);
+uint8_t getchar(void);
 char *getstr(char *buf, uint16_t len);
 

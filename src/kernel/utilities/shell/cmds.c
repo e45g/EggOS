@@ -7,9 +7,10 @@ void print_help(void) {
     printf("\n= help           : Displays this help message               =");
     printf("\n= fetch          : Displays the logo                        =");
     printf("\n= exit           : Exits the shell                          =");
+    printf("\n= clear          : Clears the screen                        =");
+    printf("\n============================ DEV ============================");
     printf("\n= get_esp        : Displays the current ESP                 =");
     printf("\n= get_stack      : Displays the current stack               =");
-    printf("\n= clear          : Clears the screen                        =");
     printf("\n=============================================================\n");
 }
 
@@ -20,7 +21,7 @@ void fetch() {
     printf("              / _)  ");
 
     terminal_set_color(VGA_COLOR_GREEN, VGA_COLOR_BLACK);
-    printf("DinoOS\n");
+    printf("EggOS\n");
     terminal_set_color(VGA_COLOR_RED, VGA_COLOR_BLACK);
 
     printf("     _.----._/ /  \n");

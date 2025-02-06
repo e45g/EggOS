@@ -67,3 +67,8 @@ void terminal_clear();
 * Sets the cursor position.
 */
 void terminal_set_cursor(uint16_t x, uint16_t y);
+
+/*
+* Clear the current line.
+*/
+void terminal_clear_line();

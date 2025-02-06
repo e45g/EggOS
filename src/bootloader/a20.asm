@@ -1,5 +1,5 @@
 activate_a20:
-    mov     ax, 2403h                ;--- A20-Gate Support ---
+    mov     ax, 2403h               ;--- A20-Gate Support ---
     int     15h
     jb      a20_ns                  ;INT 15h is not supported
     cmp     ah, 0

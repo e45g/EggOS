@@ -68,8 +68,8 @@ static keyboard_t keyboard = {
 
 static void enqueue_char(char c) {
     if (c != 0) {
-        keyboard.buffer[keyboard.head] = c;
-        keyboard.head = (keyboard.head + 1) % KB_BUFFER_MAX;
+        keyboard.buffer[keyboard.tail] = c;
+        keyboard.tail = (keyboard.tail + 1) % KB_BUFFER_MAX;
     }
 }
 
@@ -147,7 +147,12 @@ void handle_keyboard() {
 
     if (keyboard.mod_keys & MOD_SHIFT) {
         c = kb_shift[scancode];
-    } else {
+    }
+    else if(keyboard.mod_keys & MOD_CTRL) {
+        if(kb[scancode] == 'l') terminal_clear();
+        goto finish;
+    }
+    else {
         c = kb[scancode];
     }
 
@@ -159,12 +164,13 @@ finish:
     return;
 }
 
-char getchar(void) {
+uint8_t getchar(void) {
     while(keyboard.head == keyboard.tail) {
         __asm__ volatile("hlt");
     }
-    char c = keyboard.buffer[keyboard.tail];
-    keyboard.tail = (keyboard.tail + 1) % KB_BUFFER_MAX;
+    unsigned c = keyboard.buffer[keyboard.head];
+    keyboard.head = (keyboard.head + 1) % KB_BUFFER_MAX;
+    if(c == UP_ARROW_PRESSED) printf("heeeh");
     return c;
 }
 

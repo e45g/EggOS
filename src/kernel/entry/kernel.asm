@@ -12,8 +12,6 @@ section .text.start
 _start:
     mov esp, stack_end
 
-
-
     call kernel_main
     mov dword [0xB8000], 0x0A42
     jmp $

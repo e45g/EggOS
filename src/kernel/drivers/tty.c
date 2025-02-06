@@ -154,3 +154,12 @@ void terminal_clear(void) {
     terminal_set_cursor(0, 0);
     terminal_update_cursor();
 }
+
+
+void terminal_clear_line() {
+    for(uint16_t x = 0; x < VGA_WIDTH; x++) {
+        terminal_buffer[terminal_y * VGA_WIDTH + x] = vga_entry(' ', terminal_color);
+    }
+    terminal_x = 0;
+    terminal_update_cursor();
+}

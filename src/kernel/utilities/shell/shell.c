@@ -5,14 +5,80 @@
 #include <common.h>
 #include <shell.h>
 
-static char history[256][256] = {0};
+static shell_t shell = {
+    .prompt = {0},
+    .history = {0},
+    .history_index = 0,
+    .history_count = 0
+};
+
+char *shell_getstr(char *buf, uint16_t len) {
+    uint16_t i = 0;
+    int c;
+
+    while(i < len - 1) {
+        c = getchar();
+
+        if(c == 0) {
+            if (i == 0) {
+                return NULL;
+            }
+            break;
+        }
+
+        if(c == UP_ARROW_PRESSED) {
+            if(shell.history_index > 0) {
+                terminal_clear_line();
+                strcpy(buf, shell.history[--shell.history_index]);
+                i = strlen(buf);
+                printf("$ %s", buf);
+            }
+            continue;
+        }
+        if(c == DOWN_ARROW_PRESSED) {
+            if(shell.history_index < shell.history_count) {
+                terminal_clear_line();
+                strcpy(buf, shell.history[++shell.history_index]);
+                i = strlen(buf);
+                printf("$ %s", buf);
+            }
+            continue;
+        }
+
+        if(c == '\n') {
+            buf[i++] = '\0';
+            terminal_putchar(c);
+            terminal_update_cursor();
+            break;
+        }
+
+        if(c == '\b') {
+            if(i > 0) {
+                i--;
+                terminal_putchar(c);
+                terminal_update_cursor();
+            }
+            continue;
+        }
+
+        buf[i++] = c;
+        terminal_putchar(c);
+        terminal_update_cursor();
+
+    }
+    if(buf != NULL && buf != shell.prompt && *buf != '\0' && *buf != '\n') {
+        strcpy(shell.history[shell.history_index++], buf);
+        shell.history_count++;
+    }
+    return buf;
+}
 
 void launch_shell(void) {
     char prefix[] = "$ ";
     char prompt[256];
     do {
         printf("%s", prefix, prompt);
-        getstr(prompt, sizeof(prompt));
+        shell_getstr(prompt, sizeof(prompt));
 
         if(strcmp(prompt, "get_esp") == 0) {
             printf("%x\n", get_esp());
@@ -34,9 +100,6 @@ void launch_shell(void) {
         else {
             printf("Command `%s` not found.\n", prompt);
         }
-
-        strcpy(history[0], prompt);
-
     } while(strcmp(prompt, "exit") != 0);
 
 }
