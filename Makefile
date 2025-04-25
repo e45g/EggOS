@@ -42,7 +42,7 @@ directories:
 	mkdir -p $(BIN_DIR)
 
 run: all
-	qemu-system-i386 -drive format=raw,file=$(OS_IMAGE) -s
+	qemu-system-i386 -cpu pentium -m 128M -drive format=raw,file=$(OS_IMAGE) -s
 
 boot:
 	$(ASM) -f bin -o $(BOOT_BIN) $(BOOT_DIR)/boot.asm

@@ -1,3 +1,4 @@
+#include "memory.h"
 #include <kernel.h>
 #include <tty.h>
 #include <idt.h>
@@ -10,7 +11,7 @@
 #endif
 
 #if !defined(__i386__)
-#error "You are not using ix86-elf compiler, you dummy."
+#error "You are not using x86-elf compiler, you dummy."
 #endif
 
 
@@ -21,6 +22,8 @@ void kernel_main(void)
 
     pic_setup();
     idt_init();
+
+    print_memory_map();
 
     launch_shell();
 
