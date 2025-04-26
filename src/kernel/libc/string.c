@@ -13,10 +13,10 @@ int strcmp(const char *s1, const char *s2) {
 }
 
 size_t strlen(const char* str) {
-	size_t len = 0;
-	while (str[len])
-		len++;
-	return len;
+    size_t len = 0;
+    while (str[len])
+        len++;
+    return len;
 }
 
 char *strcpy(char *dest, const char *src) {

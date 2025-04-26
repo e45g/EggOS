@@ -14,16 +14,18 @@
 #error "You are not using x86-elf compiler, you dummy."
 #endif
 
-
-void kernel_main(void)
+void kmain(void)
 {
+
     terminal_initialization();
     welcome_msg();
 
     pic_setup();
     idt_init();
 
-    print_memory_map();
+    pmm_init();
+
+    vmm_init();
 
     launch_shell();
 

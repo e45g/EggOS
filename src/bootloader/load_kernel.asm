@@ -1,8 +1,9 @@
 load_kernel:
     push dx
+    mov dh, KERNEL_SECTORS
 
     mov ah, 0x02 ; BIOS mode
-    mov al, dh ; Sector count
+    mov al, dh   ; Sector count
     mov ch, 0x00 ; Cylinder
     mov cl, 0x02 ; Starting sector
     mov dh, 0x00 ; Head number

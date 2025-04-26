@@ -1,6 +1,7 @@
 [org 0x7C00]
 [bits 16]
 
+KERNEL_SECTORS equ 0x20
 KERNEL_ADDRESS equ 0x10000
 MEMORY_MAP_ADDRESS equ 0x8000
 
@@ -16,8 +17,8 @@ _start:
     mov ss, ax
     mov sp, 0x7E00
 
+    mov dh, KERNEL_SECTORS
     mov [boot_drive], dl;
-    mov dh, 0x20
     mov bx, 0x1000
 
     ; welcome message
@@ -90,7 +91,17 @@ protected_mode:
     mov gs, ax
     mov ss, ax
 
-    call KERNEL_ADDRESS
+    ; move the kernel to 1M
+    mov esi, KERNEL_ADDRESS
+    mov edi, 0x100000
+    mov ecx, KERNEL_SECTORS
+    imul ecx, ecx, 512
+    add ecx, 3
+    shr ecx, 2
+    cld
+    rep movsd
+
+    call 0x100000
     mov dword [0xB8000], 0x0A41
     cli
 

@@ -5,19 +5,13 @@
 #include <common.h>
 #include <shell.h>
 
-static shell_t shell = {
-    .prompt = {0},
-    .history = {0},
-    .history_index = 0,
-    .history_count = 0
-};
+static shell_t shell = {0};
 
 char *shell_getstr(char *buf, uint16_t len) {
     uint16_t i = 0;
-    int c;
 
     while(i < len - 1) {
-        c = getchar();
+        int c = getchar();
 
         if(c == 0) {
             if (i == 0) {
@@ -74,10 +68,10 @@ char *shell_getstr(char *buf, uint16_t len) {
 }
 
 void launch_shell(void) {
-    char prefix[] = "$ ";
-    char prompt[256];
+    const char prefix[] = "$ ";
+    char prompt[256] = {0};
     do {
-        printf("%s", prefix, prompt);
+        printf("%s", prefix);
         shell_getstr(prompt, sizeof(prompt));
 
         if(strcmp(prompt, "get_esp") == 0) {

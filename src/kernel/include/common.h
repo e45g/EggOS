@@ -53,8 +53,6 @@ char *strcpy(char *dst, const char *src);
 * stdlib.h
 */
 
-void memset(void *buf, char c, size_t n);
-void memcpy(void *dst, const void *src, unsigned long n);
+void memset(void *dest, int c, uint32_t n);
+void memcpy(void *dst, const void *src, uint32_t n);
 
-
-void paging_setup();

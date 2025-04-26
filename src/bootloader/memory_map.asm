@@ -23,7 +23,7 @@ memory_map_entry:
 
     jcxz next_entry
 
-    cmp cl, 20		; got a 24 byte ACPI 3.X response?
+    cmp cl, 20
 	jbe short notext
 
     jmp next_entry
@@ -32,8 +32,8 @@ memory_map_entry:
 notext:
 	mov ecx, [es:di + 8]	; get lower uint32_t of memory region length
 	or ecx, [es:di + 12]	; "or" it with upper uint32_t to test for zero
-	jz next_entry		; if length uint64_t is 0, skip entry
-	inc bp			; got a good entry: ++count, move to next storage spot
+	jz next_entry		; length is 0, skip entry
+	inc bp
 	add di, 24
 
 next_entry:

@@ -75,46 +75,46 @@ static void enqueue_char(char c) {
 
 static bool handle_modifier(uint8_t scancode) {
     switch (scancode) {
-        case LSHIFT_PRESSED:
-            keyboard.mod_keys |= MOD_SHIFT;
-            return true;
-        case LCTRL_PRESSED:
-            keyboard.mod_keys |= MOD_CTRL;
-            return true;
-        case LALT_PRESSED:
-            keyboard.mod_keys |= MOD_ALT;
-            return true;
-        case LSHIFT_PRESSED + 0x80:
-            keyboard.mod_keys &= ~MOD_SHIFT;
-            return true;
-        case LCTRL_PRESSED + 0x80:
-            keyboard.mod_keys &= ~MOD_CTRL;
-            return true;
-        case LALT_PRESSED + 0x80:
-            keyboard.mod_keys &= ~MOD_ALT;
-            return true;
-        default:
-            return false;
+    case LSHIFT_PRESSED:
+        keyboard.mod_keys |= MOD_SHIFT;
+        return true;
+    case LCTRL_PRESSED:
+        keyboard.mod_keys |= MOD_CTRL;
+        return true;
+    case LALT_PRESSED:
+        keyboard.mod_keys |= MOD_ALT;
+        return true;
+    case LSHIFT_PRESSED + 0x80:
+        keyboard.mod_keys &= ~MOD_SHIFT;
+        return true;
+    case LCTRL_PRESSED + 0x80:
+        keyboard.mod_keys &= ~MOD_CTRL;
+        return true;
+    case LALT_PRESSED + 0x80:
+        keyboard.mod_keys &= ~MOD_ALT;
+        return true;
+    default:
+        return false;
     }
 }
 
 static bool handle_extended(uint8_t scancode) {
     char c = 0;
     switch (scancode) {
-        case 0x4D:  // right arrow
-            c = RIGHT_ARROW_PRESSED;
-            break;
-        case 0x4B:  // left arrow
-            c = LEFT_ARROW_PRESSED;
-            break;
-        case 0x48:  // up arrow
-            c = UP_ARROW_PRESSED;
-            break;
-        case 0x50:  // down arrow
-            c = DOWN_ARROW_PRESSED;
-            break;
-        default:
-            return false;
+    case 0x4D:  // right arrow
+        c = RIGHT_ARROW_PRESSED;
+        break;
+    case 0x4B:  // left arrow
+        c = LEFT_ARROW_PRESSED;
+        break;
+    case 0x48:  // up arrow
+        c = UP_ARROW_PRESSED;
+        break;
+    case 0x50:  // down arrow
+        c = DOWN_ARROW_PRESSED;
+        break;
+    default:
+        return false;
     }
     enqueue_char(c);
     keyboard.state = STATE_NORMAL;
@@ -152,6 +152,9 @@ void handle_keyboard() {
         if(kb[scancode] == 'l') terminal_clear();
         goto finish;
     }
+    else if(keyboard.mod_keys & MOD_ALT) {
+        goto finish;
+    }
     else {
         c = kb[scancode];
     }
@@ -176,10 +179,9 @@ uint8_t getchar(void) {
 
 char *getstr(char *buf, uint16_t len) {
     uint16_t i = 0;
-    int c;
 
     while(i < len - 1) {
-        c = getchar();
+        int c = getchar();
 
         if(c == 0) {
             if (i == 0) {

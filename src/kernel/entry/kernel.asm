@@ -1,6 +1,6 @@
 section .data
 global _start
-extern kernel_main
+extern kmain
 
 section .bss
 align 16
@@ -12,8 +12,17 @@ section .text.start
 _start:
     mov esp, stack_end
 
-    call kernel_main
+    ; zero fill bss
+    extern bss_start
+    extern bss_end
+    mov edi, bss_start
+    mov ecx, bss_end
+    sub ecx, edi
+    shr ecx, 2            ; divide size by 4 (bytes -> dwords)
+    xor eax, eax
+    rep stosd
+
+
+    call kmain
     mov dword [0xB8000], 0x0A42
     jmp $
-
-times 512 - ($ - $$) db 0
