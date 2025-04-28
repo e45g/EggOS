@@ -1,6 +1,7 @@
 #include <tty.h>
 #include <pic.h>
 #include <vga.h>
+#include <cpu.h>
 
 static uint16_t VGA_WIDTH = 80;
 static uint16_t VGA_HEIGHT= 25;
@@ -119,10 +120,10 @@ void terminal_writestring(const char *str) {
 void terminal_update_cursor() {
     uint16_t pos = terminal_y * VGA_WIDTH + terminal_x;
 
-	outb(0x3D4, 0x0F);
-	outb(0x3D5, (uint8_t) (pos & 0xFF));
-	outb(0x3D4, 0x0E);
-	outb(0x3D5, (uint8_t) ((pos >> 8) & 0xFF));
+    outb(0x3D4, 0x0F);
+    outb(0x3D5, (uint8_t) (pos & 0xFF));
+    outb(0x3D4, 0x0E);
+    outb(0x3D5, (uint8_t) ((pos >> 8) & 0xFF));
 }
 
 void welcome_msg() {

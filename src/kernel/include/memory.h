@@ -11,6 +11,9 @@
 #define RECURSIVE_BASE (uintptr_t)(1023U * 0x400000U)
 #define PD_VIRT ((uint32_t*)(RECURSIVE_BASE + (1023U * PAGE_SIZE)))
 
+// heap - splits node if its is bigger than MIN_SPLIT + req_size
+#define MIN_SPLIT 0x10
+
 typedef enum {
     USABLE = 1,
     RESERVED,
@@ -56,5 +59,6 @@ void free_page(void *page);
 extern void enable_paging();
 
 void heap_init(void);
+void heap_print();
 void *malloc(size_t size);
 void free(void *ptr);

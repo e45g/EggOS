@@ -33,7 +33,7 @@ void map_page(uint32_t vaddr, uint32_t paddr, uint32_t flags) {
     page_table = (uint32_t *)(RECURSIVE_BASE + (pd_index * PAGE_SIZE));
     page_table[pt_index] = (paddr & PAGE_MASK) | flags | VMM_PRESENT;
 
-    asm volatile ("invlpg (%0)" : : "r"(vaddr) : "memory");
+    __asm__ volatile ("invlpg (%0)" : : "r"(vaddr) : "memory");
 }
 
 void unmap_page(uint32_t vaddr) {
@@ -46,7 +46,7 @@ void unmap_page(uint32_t vaddr) {
     if(!(page_table[pt_index] & 0x1)) return;
 
     page_table[pt_index] = 0x0;
-    asm volatile ("invlpg (%0)" : : "r"(vaddr) : "memory");
+    __asm__ volatile ("invlpg (%0)" : : "r"(vaddr) : "memory");
 }
 
 uint32_t get_mapping(uint32_t vaddr) {

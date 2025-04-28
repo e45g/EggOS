@@ -1,5 +1,6 @@
 #include <keyboard.h>
 #include <tty.h>
+#include <cpu.h>
 #include <pic.h>
 
 char kb[] = {

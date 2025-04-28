@@ -13,9 +13,6 @@
 
 #define PIC_EOI 0x20
 
-void io_wait(void);
-uint8_t inb(uint16_t port);
-void outb(uint16_t port, uint8_t value);
 void pic_disable(void);
 void pic_send_eoi(uint8_t irq);
 void pic_setup();

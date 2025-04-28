@@ -1,3 +1,4 @@
+#include "common.h"
 #include "kernel.h"
 #include "utils.h"
 #include <memory.h>
@@ -26,8 +27,6 @@ int heap_grow(size_t size) {
         map_page(heap_end + i, paddr, VMM_RW | VMM_USER);
     }
 
-    // TODO : If too big, split
-
     heap_node_t *node = (heap_node_t*)heap_end;
     node->size = grow_size - sizeof(heap_node_t);
     node->is_free = true;
@@ -50,16 +49,28 @@ void *malloc(size_t size) {
     heap_node_t *current = heap_head;
     while(current != NULL) {
         if(current->is_free == true && current->size >= (total_size - sizeof(heap_node_t))) {
+            if(current->size > total_size + MIN_SPLIT) {
+                printf("[HEAP] Splitting : node_size: %lu | requested size: %lu\n", current->size, total_size);
 
-            // TODO : Split if too big;
-            printf("Heap node found. Address: %p; Size: %lu\n", current, current->size);
+                heap_node_t *new_node = (heap_node_t*)((uintptr_t)current + total_size);
+                new_node->size = current->size - total_size;
+                new_node->is_free = true;
+                new_node->next = current->next;
+                new_node->prev = current;
+                if(current->next) current->next->prev = new_node;
+                if (current == heap_tail) heap_tail = new_node;
+
+                current->size = total_size - sizeof(heap_node_t);
+                current->next = new_node;
+            }
+            // printf("[HEAP] Node found : size: %lu | address: %p\n", current->size, current);
             current->is_free = false;
             return (void*)((uintptr_t)current+sizeof(heap_node_t));
         }
         current = current->next;
     }
 
-    printf("Heap node not found. Growing heap. Size: %lu\n", total_size);
+    // printf("[HEAP] Growing heap : size: %lu\n", total_size);
     if(heap_grow(total_size) == 0) {
         return malloc(size);
     }
@@ -68,8 +79,8 @@ void *malloc(size_t size) {
 }
 
 void free(void *ptr) {
-    if(ptr == NULL) return;
     heap_node_t *node = (heap_node_t*) ((uintptr_t)ptr - sizeof(heap_node_t));
+    if(node == NULL) return;
 
     node->is_free = true;
 
@@ -103,4 +114,15 @@ void free(void *ptr) {
             else heap_head = NULL;
         }
     }
+}
+
+void heap_print() {
+    const heap_node_t *current = heap_head;
+    size_t i = 0;
+    while(current != NULL) {
+        printf("[HEAP] Block %u: free: %d | size: %lu | total_size: %lu | addr: %p\n", i, current->is_free, current->size, current->size + sizeof(heap_node_t), current);
+        current = current -> next;
+        i++;
+    }
+    printf("\n");
 }
