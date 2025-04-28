@@ -1,8 +1,9 @@
 [org 0x7C00]
 [bits 16]
 
-KERNEL_SECTORS equ 0x20
+KERNEL_SECTORS equ 0x30
 KERNEL_ADDRESS equ 0x10000
+KERNEL_DEST    equ 0x100000
 MEMORY_MAP_ADDRESS equ 0x8000
 
 %define ENDL 0x0D, 0x0A
@@ -15,11 +16,9 @@ _start:
     mov ds, ax
     mov es, ax
     mov ss, ax
-    mov sp, 0x7E00
+    mov sp, 0x7FF0
 
-    mov dh, KERNEL_SECTORS
     mov [boot_drive], dl;
-    mov bx, 0x1000
 
     ; welcome message
     mov si, welcome_msg
@@ -42,7 +41,7 @@ _start:
     or al, 1
     mov cr0, eax
 
-    jmp CODE_OFFSET:protected_mode
+    jmp CODE_SEG:protected_mode
 
     hlt
 
@@ -79,12 +78,8 @@ halt:
 
 [bits 32]
 protected_mode:
-
     ; setup segments and stack
-    mov ax, CODE_OFFSET
-    mov cs, ax
-
-    mov ax, DATA_OFFSET
+    mov ax, DATA_SEG
     mov ds, ax
     mov es, ax
     mov fs, ax
@@ -93,15 +88,15 @@ protected_mode:
 
     ; move the kernel to 1M
     mov esi, KERNEL_ADDRESS
-    mov edi, 0x100000
+    mov edi, KERNEL_DEST
     mov ecx, KERNEL_SECTORS
-    imul ecx, ecx, 512
+    shl ecx, 9
     add ecx, 3
     shr ecx, 2
     cld
     rep movsd
 
-    call 0x100000
+    call KERNEL_DEST
     mov dword [0xB8000], 0x0A41
     cli
 

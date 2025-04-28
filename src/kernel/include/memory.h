@@ -20,9 +20,9 @@ typedef enum {
 } region_type_t;
 
 typedef enum {
-    PRESENT = 1 << 0,
-    READ_WRITE = 1 << 1,
-    USER = 1 << 2,
+    VMM_PRESENT = 1 << 0,
+    VMM_RW = 1 << 1,
+    VMM_USER = 1 << 2,
 } vmm_flags_t;
 
 typedef struct {
@@ -30,20 +30,30 @@ typedef struct {
     uint64_t length;
     uint32_t type;
     uint32_t acpi;
-}__attribute__((packed)) memory_map_entry_t;
+} __attribute__((packed)) memory_map_entry_t;
 
-extern void enable_paging();
+typedef struct heap_node {
+    size_t size;
+    bool is_free;
+
+    struct heap_node *next;
+    struct heap_node *prev;
+} heap_node_t;
+
+void pmm_init(void);
+void pmm_mark_used(uintptr_t addr);
+void pmm_mark_free(uintptr_t addr);
+void *pmm_alloc_page();
+void pmm_free_page(void* addr);
+void print_memory_map(void);
+
 void vmm_init(void);
 void map_page(uint32_t vaddr, uint32_t paddr, uint32_t flags);
 void unmap_page(uint32_t vaddr);
 uint32_t get_mapping(uint32_t vaddr);
 void *alloc_page();
 void free_page(void *page);
+extern void enable_paging();
 
-void pmm_init(void);
-void print_memory_map(void);
-
-void pmm_mark_used(uintptr_t addr);
-void pmm_mark_free(uintptr_t addr);
-void *pmm_alloc_page();
-void pmm_free_page(void* addr);
+void heap_init(void);
+void *malloc(size_t size);

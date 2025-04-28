@@ -27,8 +27,6 @@ void pmm_init(void) {
 
     memset(pmm_bitmap, 0xFF, bitmap_size);
 
-
-    uint32_t kernel_end = (uint32_t)&_kernel_end;
     for(int i = 0; i < size; i++) {
         memory_map_entry_t entry = map[i];
         if(entry.type == 1) {

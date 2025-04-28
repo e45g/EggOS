@@ -1,4 +1,5 @@
 #include "memory.h"
+#include "utils.h"
 #include <kernel.h>
 #include <tty.h>
 #include <idt.h>
@@ -14,8 +15,12 @@
 #error "You are not using x86-elf compiler, you dummy."
 #endif
 
+uintptr_t kernel_end;
+
 void kmain(void)
 {
+    uintptr_t kernel_end_addr = (uintptr_t)&_kernel_end;
+    kernel_end = ALIGN_UP(kernel_end_addr, PAGE_SIZE);
 
     terminal_initialization();
     welcome_msg();
@@ -24,8 +29,15 @@ void kmain(void)
     idt_init();
 
     pmm_init();
-
     vmm_init();
+
+    heap_init();
+
+    char *c = malloc(120);
+    if(c == NULL) return;
+    memset(c, 'a', 12);
+    printf("%s\n", c);
+
 
     launch_shell();
 

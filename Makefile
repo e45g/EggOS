@@ -33,7 +33,7 @@ $(info ASM Objects: $(KERNEL_ASM_OBJS))
 .PHONY: all clean run boot kernel
 
 all: directories boot kernel
-	dd if=/dev/zero of=$(OS_IMAGE) bs=512 count=40
+	dd if=/dev/zero of=$(OS_IMAGE) bs=512 count=80
 	dd if=$(BOOT_BIN) of=$(OS_IMAGE) bs=512 conv=notrunc
 	dd if=$(KERNEL_BIN) of=$(OS_IMAGE) bs=512 seek=1 conv=notrunc
 
@@ -42,7 +42,7 @@ directories:
 	mkdir -p $(BIN_DIR)
 
 run: all
-	qemu-system-i386 -cpu pentium -m 1G -drive format=raw,file=$(OS_IMAGE) -s
+	qemu-system-i386 -cpu pentium -m 1G -drive format=raw,file=$(OS_IMAGE) -s -no-reboot -monitor stdio
 
 boot:
 	$(ASM) -f bin -o $(BOOT_BIN) $(BOOT_DIR)/boot.asm

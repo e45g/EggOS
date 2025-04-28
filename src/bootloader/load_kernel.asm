@@ -7,7 +7,7 @@ load_kernel:
     mov ch, 0x00 ; Cylinder
     mov cl, 0x02 ; Starting sector
     mov dh, 0x00 ; Head number
-    mov bx, 0x1000
+    mov bx, KERNEL_ADDRESS >> 4
     mov es, bx
     mov bx, 0x0
 

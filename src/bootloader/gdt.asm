@@ -23,5 +23,5 @@ gdtr:
     dw gdt_end - gdt_start - 1
     dd gdt_start
 
-CODE_OFFSET equ gdt_code - gdt_start
-DATA_OFFSET equ gdt_data - gdt_start
+CODE_SEG equ gdt_code - gdt_start
+DATA_SEG equ gdt_data - gdt_start

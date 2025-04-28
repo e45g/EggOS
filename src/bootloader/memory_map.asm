@@ -24,12 +24,12 @@ memory_map_entry:
     jcxz next_entry
 
     cmp cl, 20
-	jbe short notext
+	jbe short save_entry
 
     jmp next_entry
 
 
-notext:
+save_entry:
 	mov ecx, [es:di + 8]	; get lower uint32_t of memory region length
 	or ecx, [es:di + 12]	; "or" it with upper uint32_t to test for zero
 	jz next_entry		; length is 0, skip entry
