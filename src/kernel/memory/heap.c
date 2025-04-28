@@ -17,10 +17,8 @@ void heap_init(void) {
 }
 
 int heap_grow(size_t size) {
-    size_t grow_size = PAGE_SIZE;
-    while(grow_size <= size) {
-        grow_size += PAGE_SIZE;
-    }
+    size_t grow_size = (size + PAGE_SIZE - 1) / PAGE_SIZE;
+    grow_size *= PAGE_SIZE;
 
     for(size_t i = 0; i < grow_size; i += PAGE_SIZE) {
         uintptr_t paddr = (uintptr_t) pmm_alloc_page();
@@ -46,6 +44,7 @@ int heap_grow(size_t size) {
 }
 
 void *malloc(size_t size) {
+    if(size == 0) return NULL;
     size_t total_size = ALIGN_UP(size + sizeof(heap_node_t), 8);
 
     heap_node_t *current = heap_head;
@@ -53,7 +52,7 @@ void *malloc(size_t size) {
         if(current->is_free == true && current->size >= (total_size - sizeof(heap_node_t))) {
 
             // TODO : Split if too big;
-            printf("Heap node found. Address: %p; Size: %lu\n", &current, current->size);
+            printf("Heap node found. Address: %p; Size: %lu\n", current, current->size);
             current->is_free = false;
             return (void*)((uintptr_t)current+sizeof(heap_node_t));
         }
@@ -65,6 +64,43 @@ void *malloc(size_t size) {
         return malloc(size);
     }
 
-
     return NULL;
+}
+
+void free(void *ptr) {
+    if(ptr == NULL) return;
+    heap_node_t *node = (heap_node_t*) ((uintptr_t)ptr - sizeof(heap_node_t));
+
+    node->is_free = true;
+
+    if(node->prev && node->prev->is_free) {
+        node->prev->size += node->size + sizeof(heap_node_t);
+        node->prev->next = node->next;
+        if(node->next) node->next->prev = node->prev;
+        node = node->prev;
+    }
+    if(node->next && node->next->is_free) {
+        node->size += node->next->size + sizeof(heap_node_t);
+        heap_node_t *yank_me = node->next;
+        node->next = yank_me->next;
+        if(yank_me->next) yank_me->next->prev = node;
+    }
+    if(heap_tail == node && node->size >= PAGE_SIZE) {
+        size_t total_size = node->size + sizeof(heap_node_t);
+        size_t pages = (total_size + PAGE_SIZE - 1) / PAGE_SIZE;
+
+        for(size_t k = 0; k < pages; k++) {
+            uintptr_t vaddr = heap_end - PAGE_SIZE*(k+1);
+            uintptr_t paddr = get_mapping(vaddr);
+            unmap_page(vaddr);
+            pmm_free_page((void*)paddr);
+        }
+        heap_end -= PAGE_SIZE * pages;
+        node->size = total_size - PAGE_SIZE * pages - sizeof(heap_node_t);
+        if(node->size == 0) {
+            heap_tail = node->prev;
+            if(heap_tail != NULL) heap_tail->next = NULL;
+            else heap_head = NULL;
+        }
+    }
 }

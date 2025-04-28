@@ -33,10 +33,28 @@ void kmain(void)
 
     heap_init();
 
-    char *c = malloc(120);
+    char *c = malloc(13);
     if(c == NULL) return;
     memset(c, 'a', 12);
+    c[12] = '\0';
     printf("%s\n", c);
+
+    char *c1 = malloc(120);
+    if(c1 == NULL) return;
+    memset(c1, 'b', 12);
+    c1[12] = '\0';
+    printf("%s\n", c1);
+
+    free(c);
+
+    char *c2 = malloc(120);
+    if(c2 == NULL) return;
+    memset(c2, 'c', 12);
+    c2[12] = '\0';
+    printf("%s\n", c2);
+
+    free(c1);
+    free(c2);
 
 
     launch_shell();

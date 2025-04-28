@@ -57,3 +57,4 @@ extern void enable_paging();
 
 void heap_init(void);
 void *malloc(size_t size);
+void free(void *ptr);
