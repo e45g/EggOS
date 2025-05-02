@@ -1,41 +1,47 @@
-LD = $(HOME)/opt/cross/bin/i686-elf-ld
-GCC = $(HOME)/opt/cross/bin/i686-elf-gcc
-ASM = nasm
 
-SRC_DIR = src
-KERNEL_DIR = $(SRC_DIR)/kernel
-BOOT_DIR = $(SRC_DIR)/bootloader
-BUILD_DIR = build
-BIN_DIR = bin
+# Toolchain
+LD               = $(HOME)/opt/cross/bin/i686-elf-ld
+GCC              = $(HOME)/opt/cross/bin/i686-elf-gcc
+ASM              = nasm
+OBJCOPY          = $(HOME)/opt/cross/bin/i686-elf-objcopy
 
-KERNEL_C_SRCS := $(shell find $(KERNEL_DIR) -name '*.c')
-KERNEL_ASM_SRCS := $(shell find $(KERNEL_DIR) -name '*.asm')
+# Directories
+SRC_DIR          = src
+KERNEL_DIR       = $(SRC_DIR)/kernel
+BOOT_DIR1        = $(SRC_DIR)/bootloader/1
+BOOT_DIR2        = $(SRC_DIR)/bootloader/2
+BUILD_DIR        = build
+BIN_DIR          = bin
 
-KERNEL_C_OBJS := $(addprefix $(BUILD_DIR)/,$(notdir $(KERNEL_C_SRCS:.c=_c.o)))
-KERNEL_ASM_OBJS := $(addprefix $(BUILD_DIR)/,$(notdir $(KERNEL_ASM_SRCS:.asm=_asm.o)))
+# Source files
+KERNEL_C_SRCS    := $(shell find $(KERNEL_DIR)   -name '*.c')
+KERNEL_ASM_SRCS  := $(shell find $(KERNEL_DIR)   -name '*.asm')
 
-BOOT_BIN = $(BIN_DIR)/boot.bin
-KERNEL_BIN = $(BIN_DIR)/kernel.bin
-KERNEL_ELF = $(BUILD_DIR)/kernel.elf
-OS_IMAGE = $(BIN_DIR)/os.img
+# Object files
+KERNEL_C_OBJS    := $(addprefix $(BUILD_DIR)/,$(notdir $(KERNEL_C_SRCS:.c=_c.o)))
+KERNEL_ASM_OBJS  := $(addprefix $(BUILD_DIR)/,$(notdir $(KERNEL_ASM_SRCS:.asm=_asm.o)))
 
-CFLAGS = -g3 -ffreestanding -O2 -Wall -Wextra -I$(KERNEL_DIR)/include/
-LDFLAGS = -T$(SRC_DIR)/linker.ld -static -nostdlib --nmagic
+# Binaries
+BOOT1_BIN        = $(BIN_DIR)/stage1.bin
+BOOT2_BIN        = $(BIN_DIR)/stage2.bin
+KERNEL_ELF       = $(BUILD_DIR)/kernel.elf
+KERNEL_BIN       = $(BIN_DIR)/kernel.bin
+OS_IMAGE         = $(BIN_DIR)/os.img
 
-VPATH = $(sort $(dir $(KERNEL_C_SRCS)) $(dir $(KERNEL_ASM_SRCS)))
+# Flags
+CFLAGS           = -g3 -ffreestanding -O2 -Wall -Wextra -I$(KERNEL_DIR)/include/
+LDFLAGS_KERNEL   = -static -nostdlib --nmagic -T$(SRC_DIR)/kernel.ld
 
-# Debug information
-$(info C Sources: $(KERNEL_C_SRCS))
-$(info C Objects: $(KERNEL_C_OBJS))
-$(info ASM Sources: $(KERNEL_ASM_SRCS))
-$(info ASM Objects: $(KERNEL_ASM_OBJS))
+# Search paths for %.c rules
+VPATH = $(dir $(KERNEL_C_SRCS))
 
 .PHONY: all clean run boot kernel
 
 all: directories boot kernel
-	dd if=/dev/zero of=$(OS_IMAGE) bs=512 count=80
-	dd if=$(BOOT_BIN) of=$(OS_IMAGE) bs=512 conv=notrunc
-	dd if=$(KERNEL_BIN) of=$(OS_IMAGE) bs=512 seek=1 conv=notrunc
+	dd if=/dev/zero of=$(OS_IMAGE) bs=512 count=100
+	dd if=$(BOOT1_BIN) of=$(OS_IMAGE) bs=512 conv=notrunc
+	dd if=$(BOOT2_BIN) of=$(OS_IMAGE) bs=512 seek=1 conv=notrunc
+	dd if=$(KERNEL_BIN) of=$(OS_IMAGE) bs=512 seek=4 conv=notrunc
 
 directories:
 	mkdir -p $(BUILD_DIR)
@@ -44,21 +50,28 @@ directories:
 run: all
 	qemu-system-i386 -cpu pentium -m 1G -drive format=raw,file=$(OS_IMAGE) -s -no-reboot -monitor stdio
 
-boot:
-	$(ASM) -f bin -o $(BOOT_BIN) $(BOOT_DIR)/boot.asm
+boot: $(BOOT1_BIN) $(BOOT2_BIN)
 
-# Pattern rule for C files
-$(BUILD_DIR)/%_c.o: %.c
-	$(GCC) $(CFLAGS) -c $< -o $@
+# Stage 1: raw boot sector
+$(BOOT1_BIN): $(BOOT_DIR1)/stage1.asm
+	$(ASM) -f bin -o $@ $<
 
-# Pattern rule for assembly files
+# Stage 2: pure assembly flat binary
+$(BOOT2_BIN): $(BOOT_DIR2)/stage2.asm
+	$(ASM) -f bin -o $@ $<
+
+# Kernel: assemble asm, compile C, link, objcopy
 $(BUILD_DIR)/%_asm.o: %.asm
 	$(ASM) -f elf32 -o $@ $<
 
-kernel: $(KERNEL_C_OBJS) $(KERNEL_ASM_OBJS)
-	$(LD) $(LDFLAGS) -o $(KERNEL_ELF) $^
-	objcopy -O binary $(KERNEL_ELF) $(KERNEL_BIN)
+$(BUILD_DIR)/%_c.o: %.c
+	$(GCC) $(CFLAGS) -c $< -o $@
+
+kernel: $(KERNEL_ASM_OBJS) $(KERNEL_C_OBJS)
+	$(LD) $(LDFLAGS_KERNEL) -o $(KERNEL_ELF) $^
+	$(OBJCOPY) -O binary $(KERNEL_ELF) $(KERNEL_BIN)
 
 clean:
-	rm -rf $(BUILD_DIR)
-	rm -rf $(BIN_DIR)
+	rm -rf $(BUILD_DIR) $(BIN_DIR)
+
+

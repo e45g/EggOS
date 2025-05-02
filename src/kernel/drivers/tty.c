@@ -79,7 +79,7 @@ void terminal_set_cursor(uint16_t x, uint16_t y) {
     terminal_y = y;
 }
 
-void terminal_putchar(char c) {
+void terminal_putc(char c) {
     if (c == '\n') {
         terminal_x = 0;
         terminal_y++;
@@ -106,7 +106,7 @@ void terminal_putchar(char c) {
 
 void terminal_write(const char *data, uint16_t size) {
     for(uint16_t i = 0; i < size; i++) {
-        terminal_putchar(*(data+i));
+        terminal_putc(*(data+i));
     }
 }
 

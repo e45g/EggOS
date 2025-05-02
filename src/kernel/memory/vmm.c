@@ -18,7 +18,7 @@ void vmm_init() {
     enable_paging();
 }
 
-void map_page(uint32_t vaddr, uint32_t paddr, uint32_t flags) {
+int map_page(uint32_t vaddr, uint32_t paddr, uint32_t flags) {
     uint32_t pd_index = vaddr >> 22;
     uint32_t pt_index = (vaddr >> 12) & 0x3FF;
 
@@ -26,6 +26,9 @@ void map_page(uint32_t vaddr, uint32_t paddr, uint32_t flags) {
 
     if(!(PD_VIRT[pd_index] & 0x1)) {
         void *new_table = alloc_page();
+        if(new_table == NULL) {
+            return -1;
+        }
         memset(new_table, 0, PAGE_SIZE);
         PD_VIRT[pd_index] = ((uintptr_t)new_table) | flags | VMM_PRESENT;
     }
@@ -34,6 +37,7 @@ void map_page(uint32_t vaddr, uint32_t paddr, uint32_t flags) {
     page_table[pt_index] = (paddr & PAGE_MASK) | flags | VMM_PRESENT;
 
     __asm__ volatile ("invlpg (%0)" : : "r"(vaddr) : "memory");
+    return 0;
 }
 
 void unmap_page(uint32_t vaddr) {

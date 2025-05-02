@@ -1,12 +1,13 @@
+#include "tty.h"
+#include "vbe.h"
 #include <common.h>
-#include <tty.h>
 
 void putchar(char c) {
     if (c == '\n') {
-        terminal_putchar('\r');
-        terminal_putchar('\n');
+        terminal_putc('\r');
+        terminal_putc('\n');
     } else {
-        terminal_putchar(c);
+        terminal_putc(c);
     }
 }
 
@@ -132,7 +133,7 @@ void printf(const char *fmt, ...) {
                 break;
             }
         } else {
-            terminal_putchar(*fmt);
+            terminal_putc(*fmt);
         }
         fmt++;
     }

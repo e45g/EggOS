@@ -24,7 +24,7 @@ void terminal_putcharat(char c, uint8_t color, uint16_t x, uint16_t y);
 /*
 * Puts a character `c` at the current position.
 */
-void terminal_putchar(char c);
+void terminal_putc(char c);
 
 /*
 * Writes string `str` with size of `size` at the current position.

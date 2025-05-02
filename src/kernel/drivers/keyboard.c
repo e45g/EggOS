@@ -1,7 +1,7 @@
 #include <keyboard.h>
-#include <tty.h>
 #include <cpu.h>
 #include <pic.h>
+#include <tty.h>
 
 char kb[] = {
     0, // nothing
@@ -193,7 +193,7 @@ char *getstr(char *buf, uint16_t len) {
 
         if(c == '\n') {
             buf[i++] = '\0';
-            terminal_putchar(c);
+            terminal_putc(c);
             terminal_update_cursor();
             break;
         }
@@ -201,14 +201,14 @@ char *getstr(char *buf, uint16_t len) {
         if(c == '\b') {
             if(i > 0) {
                 i--;
-                terminal_putchar(c);
+                terminal_putc(c);
                 terminal_update_cursor();
             }
             continue;
         }
 
         buf[i++] = c;
-        terminal_putchar(c);
+        terminal_putc(c);
         terminal_update_cursor();
 
     }

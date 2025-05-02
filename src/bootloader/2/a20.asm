@@ -45,8 +45,8 @@ a20_failed:
     call print
     jmp halt
 
-a20_ns_msg: db 'a20 ns:(', ENDL, 0
-a20_no_status_msg: db 'a20 no stts :(', ENDL, 0
-a20_failed_msg: db 'a20 :(', ENDL, 0
-a20_active_msg: db 'a20 ?', ENDL, 0
-a20_activated_msg: db 'a20 :)', ENDL, 0
+a20_ns_msg: db '>> a20 ns', ENDL, 0
+a20_no_status_msg: db '>> a20 stts', ENDL, 0
+a20_failed_msg: db '>> a20 fld', ENDL, 0
+a20_active_msg: db '>> a20 ?', ENDL, 0
+a20_activated_msg: db '>> a20 :)', ENDL, 0

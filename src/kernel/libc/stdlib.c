@@ -1,4 +1,3 @@
-#include <tty.h>
 #include <common.h>
 
 void memset(void *dest, int c, uint32_t n) {

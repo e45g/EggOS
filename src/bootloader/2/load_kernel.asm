@@ -5,7 +5,7 @@ load_kernel:
     mov ah, 0x02 ; BIOS mode
     mov al, dh   ; Sector count
     mov ch, 0x00 ; Cylinder
-    mov cl, 0x02 ; Starting sector
+    mov cl, 0x05 ; Starting sector
     mov dh, 0x00 ; Head number
     mov bx, KERNEL_ADDRESS >> 4
     mov es, bx
@@ -28,5 +28,5 @@ disk_error:
     jmp halt
 
 
-disk_error_msg: db 'drive :(', ENDL, 0
-disk_success_msg: db 'drive :)', ENDL, 0
+disk_error_msg: db '>> drive :(', ENDL, 0
+disk_success_msg: db '>> drive :)', ENDL, 0

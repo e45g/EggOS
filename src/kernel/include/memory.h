@@ -2,11 +2,11 @@
 
 #include "common.h"
 
-#define MEMORY_MAP_ADDR 0x8000
+#define MEMORY_MAP_ADDR 0x9000
 
 #define PAGE_SIZE 4096
 #define PAGE_MASK 0xFFFFF000  // remove flags
-#define BITMAP_ADDRESS 0x9000
+#define BITMAP_ADDRESS 0x10000
 
 #define RECURSIVE_BASE (uintptr_t)(1023U * 0x400000U)
 #define PD_VIRT ((uint32_t*)(RECURSIVE_BASE + (1023U * PAGE_SIZE)))
@@ -26,6 +26,8 @@ typedef enum {
     VMM_PRESENT = 1 << 0,
     VMM_RW = 1 << 1,
     VMM_USER = 1 << 2,
+    VMM_PWT = 1 << 3,
+    VMM_DISABLE_CACHE = 1 << 4
 } vmm_flags_t;
 
 typedef struct {
@@ -51,7 +53,7 @@ void pmm_free_page(void* addr);
 void print_memory_map(void);
 
 void vmm_init(void);
-void map_page(uint32_t vaddr, uint32_t paddr, uint32_t flags);
+int map_page(uint32_t vaddr, uint32_t paddr, uint32_t flags);
 void unmap_page(uint32_t vaddr);
 uint32_t get_mapping(uint32_t vaddr);
 void *alloc_page();

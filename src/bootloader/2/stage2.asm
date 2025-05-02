@@ -1,27 +1,22 @@
-[org 0x7C00]
+[org 0x8000]
 [bits 16]
 
 KERNEL_SECTORS equ 0x30
-KERNEL_ADDRESS equ 0x10000
+KERNEL_ADDRESS equ 0x11000
 KERNEL_DEST    equ 0x100000
-MEMORY_MAP_ADDRESS equ 0x8000
+MEMORY_MAP_ADDRESS equ 0x9000
+FRAME_BUFFER_ADDRESS equ 0x9F00
 
 %define ENDL 0x0D, 0x0A
 
 jmp 0x0000:_start
 
 _start:
-    cli
-    xor ax, ax
-    mov ds, ax
-    mov es, ax
-    mov ss, ax
-    mov sp, 0x7FF0
-
-    mov [boot_drive], dl;
+    mov [boot_drive], dl
+    mov sp, 0x7fff
 
     ; welcome message
-    mov si, welcome_msg
+    mov si, stage_2
     call print
 
     ; load the kernel
@@ -33,8 +28,13 @@ _start:
     ; map memory
     call memory_map
 
+    ; vesa
+    ; call get_vesa
+    ; call enter_vesa
+
     ; gdt
     lgdt [gdtr]
+
 
     ; enter protected mode
     mov eax, cr0
@@ -45,10 +45,11 @@ _start:
 
     hlt
 
-%include "src/bootloader/a20.asm"
-%include "src/bootloader/load_kernel.asm"
-%include "src/bootloader/gdt.asm"
-%include "src/bootloader/memory_map.asm"
+%include "src/bootloader/2/a20.asm"
+%include "src/bootloader/2/load_kernel.asm"
+%include "src/bootloader/2/gdt.asm"
+%include "src/bootloader/2/memory_map.asm"
+%include "src/bootloader/2/vesa.asm"
 
 
 print:
@@ -78,6 +79,7 @@ halt:
 
 [bits 32]
 protected_mode:
+
     ; setup segments and stack
     mov ax, DATA_SEG
     mov ds, ax
@@ -97,7 +99,6 @@ protected_mode:
     rep movsd
 
     call KERNEL_DEST
-    mov dword [0xB8000], 0x0A41
     cli
 
 loopend:
@@ -107,7 +108,4 @@ loopend:
 
 [bits 16]
 boot_drive: db 0
-welcome_msg: db 'Wlcm :)', ENDL, 0
-
-times 510 - ($ - $$) db 0
-dw 0xAA55
+stage_2: db 'second_stage :) ', ENDL, 0

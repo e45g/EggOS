@@ -24,5 +24,4 @@ _start:
 
 
     call kmain
-    mov dword [0xB8000], 0x0A42
     jmp $
