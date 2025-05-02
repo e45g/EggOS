@@ -1,5 +1,6 @@
 #pragma once
 
+#include "bootinfo.h"
 #include <common.h>
 
 #define PANIC(fmt, ...)                                                        \
@@ -13,5 +14,6 @@ extern char _kernel_end;
 
 extern uintptr_t kernel_end;
 extern uintptr_t kernel_start;
+extern bootinfo_t boot_info;
 
 extern void kmain();

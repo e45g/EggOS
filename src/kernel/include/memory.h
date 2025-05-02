@@ -1,12 +1,11 @@
 #pragma once
 
+#include <kernel.h>
 #include "common.h"
-
-#define MEMORY_MAP_ADDR 0x9000
 
 #define PAGE_SIZE 4096
 #define PAGE_MASK 0xFFFFF000  // remove flags
-#define BITMAP_ADDRESS 0x10000
+#define BITMAP_ADDRESS (kernel_end + 0x100)
 
 #define RECURSIVE_BASE (uintptr_t)(1023U * 0x400000U)
 #define PD_VIRT ((uint32_t*)(RECURSIVE_BASE + (1023U * PAGE_SIZE)))

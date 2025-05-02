@@ -4,17 +4,25 @@
 KERNEL_SECTORS equ 0x30
 KERNEL_ADDRESS equ 0x11000
 KERNEL_DEST    equ 0x100000
-MEMORY_MAP_ADDRESS equ 0x9000
 FRAME_BUFFER_ADDRESS equ 0x9F00
 
 %define ENDL 0x0D, 0x0A
 
+section .data
+bootinfo:
+    .magic:        dd 0x12345678            ; magic number     - 4 bytes
+    .memmap_count: dd 0                     ; memory map count - 4 bytes;
+    .memmap_ptr:   dd memory_map_entries    ; memory map ptr   - 4 bytes
+    .boot_drive:   db 0                     ; boot drive       - 1 byte
+    .padding:      db 0, 0, 0               ; padding          - 3 bytes
+
+section .text
 jmp 0x0000:_start
 
 _start:
-    mov [boot_drive], dl
+    mov [bootinfo.boot_drive], dl
     mov sp, 0x7fff
-
+    
     ; welcome message
     mov si, stage_2
     call print
@@ -98,6 +106,9 @@ protected_mode:
     cld
     rep movsd
 
+    ; save bootinfo into ebx
+    mov ebx, bootinfo
+
     call KERNEL_DEST
     cli
 
@@ -106,6 +117,8 @@ loopend:
     jmp loopend
 
 
-[bits 16]
-boot_drive: db 0
+section .rodata
 stage_2: db 'second_stage :) ', ENDL, 0
+
+section .bss
+memory_map_entries: resb 3072

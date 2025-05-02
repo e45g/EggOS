@@ -79,6 +79,7 @@ void *malloc(size_t size) {
 }
 
 void free(void *ptr) {
+    if(ptr == NULL) return;
     heap_node_t *node = (heap_node_t*) ((uintptr_t)ptr - sizeof(heap_node_t));
     if(node == NULL) return;
 

@@ -1,7 +1,7 @@
 memory_map:
     xor ax, ax
     mov es, ax
-    mov di, MEMORY_MAP_ADDRESS + 2
+    mov di, memory_map_entries
  
     xor bp, bp
 
@@ -40,7 +40,7 @@ next_entry:
     test ebx, ebx
     jne memory_map_entry
 
-    mov word [MEMORY_MAP_ADDRESS], bp
+    mov [bootinfo.memmap_count], bp
     ret
 
 
