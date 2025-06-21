@@ -1,4 +1,5 @@
 #include <tty.h>
+#include <tests.h>
 #include <utils.h>
 #include <keyboard.h>
 #include <common.h>
@@ -88,6 +89,9 @@ void launch_shell(void) {
         }
         else if (strcmp(prompt, "help") == 0) {
             print_help();
+        }
+        else if (strcmp(prompt, "mem_test") == 0) {
+            run_memory_tests();
         }
         else if (strcmp(prompt, "exit") == 0) { }
         else {

@@ -80,7 +80,7 @@ int test_vmm_map_unmap() {
     printf("Running test_vmm_map_unmap...\n");
     uint32_t vaddr = 0x5000000;
     uint32_t paddr_target = 0xB8000;
-    uint32_t flags = VMM_PRESENT | VMM_RW | VMM_USER;
+    uint32_t flags = VMM_RW | VMM_USER;
     char test_char = 'V';
 
     // 1. Test basic map

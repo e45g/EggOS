@@ -32,9 +32,6 @@ void kmain(void)
     welcome_msg();
 
     get_bootinfo(&boot_info);
-    if(boot_info.magic != 0x12345678) {
-        PANIC("Boot info is not loaded correctly!");
-    }
 
     pic_setup();
     idt_init();

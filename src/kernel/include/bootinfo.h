@@ -5,7 +5,8 @@
 typedef struct {
     uint32_t magic;
     uint32_t memmap_count;
-    uint32_t memmap_ptr;
+    uint32_t memmap_key;
+    uint32_t memory_map;
     uint8_t boot_drive;
     uint8_t padding[3];
 } __attribute__((packed)) bootinfo_t;

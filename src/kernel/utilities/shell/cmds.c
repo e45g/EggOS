@@ -1,6 +1,6 @@
+#include <common.h>
 #include <tty.h>
 #include <vga.h>
-#include <common.h>
 
 void print_help(void) {
     printf("\n========================== GENERIC ==========================");
@@ -10,10 +10,10 @@ void print_help(void) {
     printf("\n= clear          : Clears the screen                        =");
     printf("\n============================ DEV ============================");
     printf("\n= get_esp        : Displays the current ESP                 =");
+    printf("\n= mem_test       : Run memory tests                         =");
     printf("\n= get_stack      : Displays the current stack               =");
     printf("\n=============================================================\n");
 }
-
 
 void fetch() {
     terminal_set_color(VGA_COLOR_RED, VGA_COLOR_BLACK);

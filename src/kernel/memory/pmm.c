@@ -10,7 +10,7 @@ void pmm_init(void) {
     uint32_t total_mem = 0;
 
     const uint16_t size = boot_info.memmap_count;
-    const memory_map_entry_t *map = (memory_map_entry_t*) ((uintptr_t)boot_info.memmap_ptr);
+    const memory_map_entry_t *map = (memory_map_entry_t*) ((uintptr_t)boot_info.memory_map);
 
     for(int i = 0; i < size; i++) {
         memory_map_entry_t entry = map[i];
@@ -67,7 +67,7 @@ void pmm_free_page(void* addr) {
 
 void print_memory_map() {
     const uint16_t size = boot_info.memmap_count;
-    const memory_map_entry_t *map = (memory_map_entry_t *)((uintptr_t)boot_info.memmap_ptr);
+    const memory_map_entry_t *map = (memory_map_entry_t *)((uintptr_t)boot_info.memory_map);
 
     printf("Memory Map Size: %d\n", size);
 
